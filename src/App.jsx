@@ -17,10 +17,14 @@ function Header() {
         </span>
       </Link>
       <nav className="nav">
-        <NavLink to="/" end>
-          Beranda
+        <NavLink to="/" end aria-label="Beranda">
+          <span className="nav-ikon-header">🏠</span>
+          <span className="nav-teks">Beranda</span>
         </NavLink>
-        <NavLink to="/pengaturan">Pengaturan</NavLink>
+        <NavLink to="/pengaturan" aria-label="Pengaturan">
+          <span className="nav-ikon-header">⚙️</span>
+          <span className="nav-teks">Pengaturan</span>
+        </NavLink>
       </nav>
       <div className="header-kanan">
         <span className="chip" title="Total XP">

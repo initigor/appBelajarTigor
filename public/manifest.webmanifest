@@ -1,0 +1,20 @@
+{
+  "name": "LatihKode — JavaScript & React",
+  "short_name": "LatihKode",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#12111c",
+  "theme_color": "#6d4aff",
+  "icons": [
+    {
+      "src": "/ikon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/ikon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

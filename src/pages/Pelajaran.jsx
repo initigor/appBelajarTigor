@@ -6,6 +6,8 @@ import { htmlPreview, jalankanPelajaran } from '../engine/runner.js';
 import Editor from '../components/Editor.jsx';
 import Markdown from '../components/Markdown.jsx';
 import Confetti from '../components/Confetti.jsx';
+import BarSimbol from '../components/BarSimbol.jsx';
+import { layarSentuh, useModeLayar } from '../hooks/useModeLayar.js';
 
 const MIN_PERCOBAAN_SOLUSI = 3;
 
@@ -49,6 +51,17 @@ function HalamanPelajaran({ pelajaran }) {
   const [lihatSolusi, setLihatSolusi] = useState(false);
   const [rayakan, setRayakan] = useState(null); // { xp } saat baru lulus
   const iframeRef = useRef(null);
+  const editorViewRef = useRef(null);
+
+  // Tampilan HP/tablet: hanya satu panel yang terlihat ('materi' | 'kode' | 'hasil').
+  const mode = useModeLayar();
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const [panel, setPanel] = useState('materi');
+  useEffect(() => {
+    // Di tablet, output berada di panel kode.
+    if (mode === 'tablet' && panel === 'hasil') setPanel('kode');
+  }, [mode, panel]);
 
   const percobaan = prog.data.percobaan[pelajaran.id] ?? 0;
   const selesai = prog.isSelesai(pelajaran.id);
@@ -79,6 +92,9 @@ function HalamanPelajaran({ pelajaran }) {
     jalanRef.current = true;
     setJalan(true);
     setLogs([]);
+    // Di HP langsung tampilkan panel hasil; di tablet output ada di bawah editor.
+    if (modeRef.current === 'hp') setPanel('hasil');
+    else if (modeRef.current === 'tablet') setPanel('kode');
     tambahPercobaan(pelajaran.id);
     try {
       const r = await jalankanPelajaran({
@@ -126,7 +142,7 @@ function HalamanPelajaran({ pelajaran }) {
   ];
 
   return (
-    <main className="pelajaran">
+    <main className="pelajaran" data-mode={mode} data-panel={panel}>
       <div className="bar-pelajaran">
         <Link to="/" className="link-kecil">
           ← Beranda
@@ -214,6 +230,12 @@ function HalamanPelajaran({ pelajaran }) {
               </p>
             )}
           </div>
+
+          {mode !== 'desktop' && (
+            <button className="tombol tombol-besar tombol-mulai-kode" onClick={() => setPanel('kode')}>
+              💻 Mulai ngoding →
+            </button>
+          )}
         </section>
 
         <section className="panel-kanan">
@@ -237,6 +259,8 @@ function HalamanPelajaran({ pelajaran }) {
             </span>
           </div>
 
+          {layarSentuh && <BarSimbol viewRef={editorViewRef} />}
+
           <div className="area-editor">
             <Editor
               nilai={kode}
@@ -244,6 +268,7 @@ function HalamanPelajaran({ pelajaran }) {
               onJalankan={jalankan}
               gelap={prog.temaAktif === 'gelap'}
               jsx={pelajaran.tipe === 'react'}
+              onView={(v) => (editorViewRef.current = v)}
             />
           </div>
 
@@ -315,6 +340,29 @@ function HalamanPelajaran({ pelajaran }) {
           </div>
         </section>
       </div>
+
+      {mode !== 'desktop' && (
+        <nav className="nav-bawah" aria-label="Panel pelajaran">
+          <button className={panel === 'materi' ? 'aktif' : ''} onClick={() => setPanel('materi')}>
+            <span className="nav-ikon">📖</span>Materi
+          </button>
+          <button className={panel === 'kode' ? 'aktif' : ''} onClick={() => setPanel('kode')}>
+            <span className="nav-ikon">💻</span>Kode
+          </button>
+          <button className="nav-jalan" onClick={jalankan} disabled={jalan}>
+            <span className="nav-ikon">{jalan ? '⏳' : '▶'}</span>
+            {jalan ? 'Jalan…' : 'Jalankan'}
+          </button>
+          {mode === 'hp' && (
+            <button className={panel === 'hasil' ? 'aktif' : ''} onClick={() => setPanel('hasil')}>
+              <span className="nav-ikon">
+                {hasil === null ? '📊' : semuaLulus ? '✅' : '❌'}
+              </span>
+              Hasil{hasil ? ` ${jumlahLulus}/${hasil.length}` : ''}
+            </button>
+          )}
+        </nav>
+      )}
 
       {rayakan && (
         <div className="modal-latar" onClick={() => setRayakan(null)}>

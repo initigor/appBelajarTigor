@@ -26,9 +26,32 @@ Lalu buka http://localhost:5173.
 | Perintah | Fungsi |
 | --- | --- |
 | `npm run dev` | Menjalankan website (mode pengembangan) |
+| `npm run dev:hp` | Sama, tapi bisa dibuka dari iPad/HP di Wi-Fi yang sama |
 | `npm run build` | Membuat versi produksi di folder `dist/` |
 | `npm run preview` | Menjalankan hasil build |
 | `npm run check-lessons` | Mengecek semua pelajaran (lihat di bawah) |
+
+## Belajar dari iPad atau HP
+
+`localhost` hanya bisa dibuka dari laptop itu sendiri. Supaya bisa dibuka dari iPad/HP:
+
+1. Pastikan laptop dan iPad/HP tersambung ke **Wi-Fi yang sama**.
+2. Jalankan `npm run dev:hp`. Terminal akan menampilkan alamat **Network**, misalnya `http://192.168.1.5:5173/`.
+3. Buka alamat itu di Safari/Chrome di iPad/HP. Jika Windows menanyakan izin firewall untuk Node.js, izinkan untuk jaringan **Private**.
+4. (Opsional) Supaya terasa seperti aplikasi: **Safari → Bagikan → Tambahkan ke Layar Utama**, atau di Chrome Android: **⋮ → Tambahkan ke layar utama**.
+
+Tampilan menyesuaikan ukuran layar:
+
+| Layar | Tampilan pelajaran |
+| --- | --- |
+| Laptop / iPad landscape (≥ 1024px) | Materi dan editor berdampingan |
+| iPad portrait (700–1023px) | Tab **Materi** / **Kode** (editor + output bertumpuk) |
+| HP (< 700px) | Tab **Materi** / **Kode** / **Hasil** + tombol **Jalankan** di bawah |
+
+Di layar sentuh, di atas editor muncul **baris simbol** (`( )`, `{ }`, `;`, `=>`, `${ }`, undo, dan lainnya), karena simbol-simbol ini sulit diketik di keyboard HP.
+
+> Progress disimpan per browser, jadi progress di laptop dan di iPad terpisah. Pindahkan dengan **Pengaturan → Ekspor/Impor progress**.
+> Selama `dev:hp` berjalan, website bisa dibuka siapa pun di Wi-Fi yang sama. Pakai di jaringan rumah, bukan Wi-Fi publik.
 
 ## Struktur folder
 

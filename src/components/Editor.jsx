@@ -5,7 +5,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import { keymap, EditorView } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
 
-export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx }) {
+export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx, onView }) {
   const ekstensi = useMemo(
     () => [
       javascript({ jsx }),
@@ -34,6 +34,7 @@ export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx }) {
       height="100%"
       basicSetup={{ tabSize: 2, foldGutter: false, autocompletion: true }}
       indentWithTab
+      onCreateEditor={(view) => onView?.(view)}
     />
   );
 }
