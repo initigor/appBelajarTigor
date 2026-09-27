@@ -4,10 +4,13 @@ import { useProgress } from './state/progress.jsx';
 import Beranda from './pages/Beranda.jsx';
 import Pelajaran from './pages/Pelajaran.jsx';
 import Pengaturan from './pages/Pengaturan.jsx';
+import Install from './pages/Install.jsx';
+import { useInstall } from './state/install.js';
 import { panaskanWorker } from './engine/runner.js';
 
 function Header() {
   const { totalXp, streak, sudahBelajarHariIni, temaAktif, setTema } = useProgress();
+  const { bisaInstall, install } = useInstall();
   return (
     <header className="header">
       <Link to="/" className="logo">
@@ -27,6 +30,11 @@ function Header() {
         </NavLink>
       </nav>
       <div className="header-kanan">
+        {bisaInstall && (
+          <button className="tombol tombol-install kecil" onClick={install} title="Pasang LatihKode sebagai aplikasi">
+            📲 <span className="nav-teks">Install</span>
+          </button>
+        )}
         <span className="chip" title="Total XP">
           ⚡ {totalXp} XP
         </span>
@@ -76,6 +84,7 @@ export default function App() {
         <Route path="/" element={<Beranda />} />
         <Route path="/belajar/:id" element={<Pelajaran />} />
         <Route path="/pengaturan" element={<Pengaturan />} />
+        <Route path="/install" element={<Install />} />
         <Route path="*" element={<TidakDitemukan />} />
       </Routes>
     </div>

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useProgress } from '../state/progress.jsx';
 import { semuaPelajaran } from '../lessons/index.js';
 
@@ -57,6 +58,14 @@ export default function Pengaturan() {
             </label>
           ))}
         </div>
+      </section>
+
+      <section className="kartu-setelan">
+        <h2>Aplikasi</h2>
+        <p className="teks-redup">Pasang LatihKode di layar utama HP, iPad, atau laptop supaya bisa dibuka seperti aplikasi, termasuk saat offline.</p>
+        <Link className="tombol tombol-kedua" to="/install">
+          📲 Cara pasang aplikasi
+        </Link>
       </section>
 
       <section className="kartu-setelan">

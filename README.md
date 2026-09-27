@@ -30,15 +30,36 @@ Lalu buka http://localhost:5173.
 | `npm run build` | Membuat versi produksi di folder `dist/` |
 | `npm run preview` | Menjalankan hasil build |
 | `npm run check-lessons` | Mengecek semua pelajaran (lihat di bawah) |
+| `npm run ikon` | Membuat ulang ikon PNG aplikasi dari `public/ikon.svg` |
 
-## Belajar dari iPad atau HP
+## Deploy ke Vercel & pasang sebagai aplikasi
+
+LatihKode adalah **PWA** (Progressive Web App): bisa dipasang di layar utama HP/iPad/laptop, terbuka layar penuh, dan **tetap jalan offline** setelah dibuka sekali. Syaratnya, website dibuka lewat **HTTPS**, jadi cara termudah adalah deploy ke Vercel (gratis).
+
+1. Buka https://vercel.com/new, masuk dengan akun GitHub, lalu **Import** repository `appBelajarTigor`.
+2. Pengaturan sudah dibaca otomatis dari `vercel.json` (Framework: Vite, Build: `npm run build`, Output: `dist`). Klik **Deploy**.
+3. Setelah selesai, kamu mendapat alamat seperti `https://app-belajar-tigor.vercel.app`. Setiap `git push` ke `main` akan otomatis men-deploy ulang.
+4. Buka alamat itu di HP, lalu:
+   - **Android (Chrome):** ketuk tombol **📲 Install** di beranda atau di header.
+   - **iPhone/iPad (Safari):** buka menu **Pengaturan → Cara pasang aplikasi** untuk tutorial bergambar. Singkatnya: **Bagikan → Tambahkan ke Layar Utama → Tambah**.
+
+Halaman tutorial lengkap ada di `/install` di dalam aplikasi.
+
+| File | Fungsi |
+| --- | --- |
+| `vite.config.js` (VitePWA) | manifest + service worker (semua file, termasuk Babel, disimpan untuk offline) |
+| `vercel.json` | semua URL diarahkan ke `index.html`, supaya `/belajar/...` tidak 404 |
+| `public/ikon.svg` | ikon utama. Jalankan `npm run ikon` untuk membuat ulang PNG-nya |
+| `src/state/install.js` | tombol install Android (`beforeinstallprompt`) & deteksi iOS |
+
+## Belajar dari iPad atau HP (tanpa deploy)
 
 `localhost` hanya bisa dibuka dari laptop itu sendiri. Supaya bisa dibuka dari iPad/HP:
 
 1. Pastikan laptop dan iPad/HP tersambung ke **Wi-Fi yang sama**.
 2. Jalankan `npm run dev:hp`. Terminal akan menampilkan alamat **Network**, misalnya `http://192.168.1.5:5173/`.
 3. Buka alamat itu di Safari/Chrome di iPad/HP. Jika Windows menanyakan izin firewall untuk Node.js, izinkan untuk jaringan **Private**.
-4. (Opsional) Supaya terasa seperti aplikasi: **Safari → Bagikan → Tambahkan ke Layar Utama**, atau di Chrome Android: **⋮ → Tambahkan ke layar utama**.
+4. (Opsional) Di iPhone/iPad bisa langsung **Bagikan → Tambahkan ke Layar Utama**. Tombol install Android dan mode offline hanya aktif lewat HTTPS, jadi gunakan Vercel untuk itu.
 
 Tampilan menyesuaikan ukuran layar:
 

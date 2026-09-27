@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { daftarChapter, semuaPelajaran } from '../lessons/index.js';
 import { useProgress } from '../state/progress.jsx';
 import ProgressBar from '../components/ProgressBar.jsx';
+import BannerInstall from '../components/BannerInstall.jsx';
 
 export default function Beranda() {
   const { totalXp, streak, jumlahSelesai, berikutnya, isSelesai } = useProgress();
@@ -45,6 +46,8 @@ export default function Beranda() {
           </div>
         </div>
       </section>
+
+      <BannerInstall />
 
       <section className="peta">
         {daftarChapter.map((c) => {

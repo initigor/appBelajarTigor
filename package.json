@@ -8,7 +8,8 @@
     "dev:hp": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "check-lessons": "node scripts/check-lessons.js"
+    "check-lessons": "node scripts/check-lessons.js",
+    "ikon": "node scripts/buat-ikon.js"
   },
   "dependencies": {
     "@babel/standalone": "^7.29.9",
@@ -28,6 +29,8 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.1",
     "jsdom": "^29.1.1",
-    "vite": "^8.3.1"
+    "sharp": "^0.35.4",
+    "vite": "^8.3.1",
+    "vite-plugin-pwa": "^1.3.0"
   }
 }
