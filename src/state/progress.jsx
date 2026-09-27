@@ -9,6 +9,8 @@ const awal = () => ({
   percobaan: {}, // { [id]: number } berapa kali "Jalankan" ditekan
   streak: { jumlah: 0, terakhir: null },
   tema: 'sistem', // 'sistem' | 'terang' | 'gelap'
+  diubah: 0, // timestamp perubahan terakhir (untuk sinkron antar-perangkat)
+  resetPada: 0, // timestamp reset terakhir
 });
 
 function muat() {
@@ -57,22 +59,32 @@ export function ProgressProvider({ children }) {
     document.documentElement.dataset.theme = temaAktif === 'gelap' ? 'dark' : 'light';
   }, [temaAktif]);
 
-  const simpanKode = useCallback((id, kode) => setData((d) => ({ ...d, kode: { ...d.kode, [id]: kode } })), []);
+  // Semua perubahan progress lewat sini supaya timestamp "diubah" selalu ikut diperbarui.
+  const ubah = useCallback(
+    (fn) =>
+      setData((d) => {
+        const baru = fn(d);
+        return baru === d ? d : { ...baru, diubah: Date.now() };
+      }),
+    [],
+  );
+
+  const simpanKode = useCallback((id, kode) => ubah((d) => ({ ...d, kode: { ...d.kode, [id]: kode } })), [ubah]);
   const hapusKode = useCallback(
     (id) =>
-      setData((d) => {
+      ubah((d) => {
         const kode = { ...d.kode };
         delete kode[id];
         return { ...d, kode };
       }),
-    [],
+    [ubah],
   );
   const tambahPercobaan = useCallback(
-    (id) => setData((d) => ({ ...d, percobaan: { ...d.percobaan, [id]: (d.percobaan[id] ?? 0) + 1 } })),
-    [],
+    (id) => ubah((d) => ({ ...d, percobaan: { ...d.percobaan, [id]: (d.percobaan[id] ?? 0) + 1 } })),
+    [ubah],
   );
   const tandaiSelesai = useCallback((pelajaran) => {
-    setData((d) => {
+    ubah((d) => {
       if (d.selesai[pelajaran.id]) return d;
       const hariIni = tanggalLokal();
       let { jumlah, terakhir } = d.streak;
@@ -86,10 +98,16 @@ export function ProgressProvider({ children }) {
         streak: { jumlah, terakhir },
       };
     });
-  }, []);
+  }, [ubah]);
   const setTema = useCallback((tema) => setData((d) => ({ ...d, tema })), []);
-  const resetProgress = useCallback(() => setData((d) => ({ ...awal(), tema: d.tema })), []);
-  const imporData = useCallback((obj) => setData({ ...awal(), ...obj }), []);
+  const resetProgress = useCallback(() => {
+    const kini = Date.now();
+    setData((d) => ({ ...awal(), tema: d.tema, diubah: kini, resetPada: kini }));
+  }, []);
+  /** Ganti seluruh progress (impor file). Tema di perangkat ini tetap. */
+  const imporData = useCallback((obj) => setData((d) => ({ ...awal(), ...obj, tema: d.tema, diubah: Date.now() })), []);
+  /** Ganti seluruh progress dengan hasil sinkron (timestamp dari hasil gabungan dipertahankan). */
+  const terapkanSinkron = useCallback((obj) => setData((d) => ({ ...awal(), ...obj, tema: d.tema })), []);
 
   const nilai = useMemo(() => {
     const hariIni = tanggalLokal();
@@ -113,8 +131,9 @@ export function ProgressProvider({ children }) {
       setTema,
       resetProgress,
       imporData,
+      terapkanSinkron,
     };
-  }, [data, temaAktif, simpanKode, hapusKode, tambahPercobaan, tandaiSelesai, setTema, resetProgress, imporData]);
+  }, [data, temaAktif, simpanKode, hapusKode, tambahPercobaan, tandaiSelesai, setTema, resetProgress, imporData, terapkanSinkron]);
 
   return <Ctx.Provider value={nilai}>{children}</Ctx.Provider>;
 }

@@ -61,6 +61,14 @@ export default function Pengaturan() {
       </section>
 
       <section className="kartu-setelan">
+        <h2>Akun & sinkronisasi</h2>
+        <p className="teks-redup">Simpan progress di cloud supaya bisa lanjut belajar dari perangkat lain.</p>
+        <Link className="tombol tombol-kedua" to="/akun">
+          👤 Buka halaman akun
+        </Link>
+      </section>
+
+      <section className="kartu-setelan">
         <h2>Aplikasi</h2>
         <p className="teks-redup">Pasang LatihKode di layar utama HP, iPad, atau laptop supaya bisa dibuka seperti aplikasi, termasuk saat offline.</p>
         <Link className="tombol tombol-kedua" to="/install">

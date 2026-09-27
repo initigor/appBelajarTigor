@@ -5,12 +5,15 @@ import Beranda from './pages/Beranda.jsx';
 import Pelajaran from './pages/Pelajaran.jsx';
 import Pengaturan from './pages/Pengaturan.jsx';
 import Install from './pages/Install.jsx';
+import Akun from './pages/Akun.jsx';
+import { useAkun } from './state/akun.jsx';
 import { useInstall } from './state/install.js';
 import { panaskanWorker } from './engine/runner.js';
 
 function Header() {
   const { totalXp, streak, sudahBelajarHariIni, temaAktif, setTema } = useProgress();
   const { bisaInstall, install } = useInstall();
+  const { akun, status } = useAkun();
   return (
     <header className="header">
       <Link to="/" className="logo">
@@ -41,6 +44,19 @@ function Header() {
         <span className={`chip ${sudahBelajarHariIni ? 'chip-api' : 'chip-redup'}`} title="Streak harian">
           🔥 {streak}
         </span>
+        <Link to="/akun" className={`chip chip-akun ${akun ? 'masuk' : ''}`} title={akun ? `Masuk sebagai ${akun.username}` : 'Masuk / buat akun'}>
+          {akun ? (
+            <>
+              <span className={`titik-sinkron ${status}`} />
+              <span className="nav-teks">{akun.username}</span>
+              <span className="nav-ikon-header">👤</span>
+            </>
+          ) : (
+            <>
+              👤 <span className="nav-teks">Masuk</span>
+            </>
+          )}
+        </Link>
         <button
           className="tombol-ikon"
           onClick={() => setTema(temaAktif === 'gelap' ? 'terang' : 'gelap')}
@@ -85,6 +101,7 @@ export default function App() {
         <Route path="/belajar/:id" element={<Pelajaran />} />
         <Route path="/pengaturan" element={<Pengaturan />} />
         <Route path="/install" element={<Install />} />
+        <Route path="/akun" element={<Akun />} />
         <Route path="*" element={<TidakDitemukan />} />
       </Routes>
     </div>

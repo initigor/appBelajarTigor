@@ -1116,6 +1116,129 @@ a {
   margin: 16px 0;
 }
 
+/* ---------- Akun ---------- */
+.chip-akun {
+  text-decoration: none;
+  color: var(--teks);
+}
+.chip-akun:hover {
+  border-color: var(--aksen);
+}
+.titik-sinkron {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--teks-2);
+}
+.titik-sinkron.tersimpan {
+  background: var(--hijau);
+}
+.titik-sinkron.sinkron,
+.titik-sinkron.menunggu {
+  background: var(--kuning);
+}
+.titik-sinkron.offline,
+.titik-sinkron.galat {
+  background: var(--merah);
+}
+.kartu-akun {
+  padding: 18px 20px;
+}
+.tab-akun {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-3);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 14px;
+}
+.tab-akun button {
+  flex: 1;
+  font: inherit;
+  font-weight: 600;
+  padding: 8px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: var(--teks-2);
+  cursor: pointer;
+}
+.tab-akun button.aktif {
+  background: var(--bg-2);
+  color: var(--aksen);
+  box-shadow: var(--bayangan);
+}
+.form-akun {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.form-akun label {
+  display: grid;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.form-akun .cek-lihat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+.form-akun .tombol-besar {
+  justify-content: center;
+}
+.pesan-akun {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+}
+.galat-akun {
+  background: var(--merah-lembut);
+  color: var(--merah);
+}
+.peringatan-akun {
+  background: #fff1d6;
+  color: #7a4a00;
+}
+:root[data-theme='dark'] .peringatan-akun {
+  background: #3b2a10;
+  color: #ffc15e;
+}
+.kecil-akun {
+  font-size: 0.85rem;
+  margin-bottom: 0;
+}
+.profil-akun {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.avatar-akun {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--aksen);
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.nama-akun {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.status-sinkron {
+  font-size: 0.9rem;
+}
+.teks-bahaya {
+  color: var(--merah);
+}
+
 /* ---------- Responsif: beranda & halaman umum ---------- */
 @media (max-width: 900px) {
   .hero {

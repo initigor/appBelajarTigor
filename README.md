@@ -52,6 +52,39 @@ Halaman tutorial lengkap ada di `/install` di dalam aplikasi.
 | `public/ikon.svg` | ikon utama. Jalankan `npm run ikon` untuk membuat ulang PNG-nya |
 | `src/state/install.js` | tombol install Android (`beforeinstallprompt`) & deteksi iOS |
 
+## Akun & sinkronisasi progress (Vercel Functions + Upstash Redis)
+
+Akun bersifat **opsional**. Tanpa akun, progress tersimpan di perangkat (localStorage) seperti biasa. Dengan akun (username + password), progress disimpan juga di cloud, sehingga bisa dilanjutkan dari perangkat lain.
+
+### Setup sekali di Vercel
+1. Buka project di dashboard Vercel → tab **Storage** → **Create Database** → pilih **Upstash (Redis)** → paket **Free** → **Connect** ke project ini. Vercel otomatis menambahkan env var `KV_REST_API_URL` dan `KV_REST_API_TOKEN`.
+2. **Settings → Environment Variables** → tambahkan `AUTH_SECRET` berisi teks acak minimal 16 karakter. Contoh cara membuatnya:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+   Jangan pernah mengganti nilai ini setelah dipakai, karena semua pengguna akan otomatis keluar.
+3. **Deployments → Redeploy** supaya env var baru terbaca.
+
+Selama langkah di atas belum dilakukan, halaman Akun akan menampilkan pesan yang menjelaskan apa yang kurang.
+
+### Cara kerja
+| Bagian | File |
+| --- | --- |
+| API (Vercel Functions) | `api/daftar.js`, `api/masuk.js`, `api/progress.js`, `api/akun.js` |
+| Database, hash password, token sesi | `server/db.js`, `server/auth.js`, `server/sesi.js` |
+| Sinkron di aplikasi | `src/state/akun.jsx`, `src/state/gabungProgress.js` |
+| Halaman | `src/pages/Akun.jsx` (`/akun`) |
+
+- Password disimpan sebagai **hash scrypt** (tidak pernah disimpan dalam bentuk aslinya).
+- Login dibatasi 10 percobaan gagal per 15 menit per username.
+- Sesi berlaku 60 hari. Mengganti password membuat perangkat lain otomatis keluar.
+- Progress dikirim ke cloud ±1,5 detik setelah ada perubahan. Saat offline, progress disimpan di perangkat dan dikirim otomatis begitu online lagi.
+- Saat masuk di perangkat baru, progress lokal dan cloud **digabung**: pelajaran selesai digabung, percobaan diambil yang terbanyak, dan kode diambil dari sisi yang lebih baru. Reset progress juga ikut tersinkron.
+- Belum ada fitur "lupa password", karena akun tidak memakai email.
+
+### Mencoba di laptop
+`npm run dev` sudah menjalankan API juga. Tanpa `.env.local`, datanya disimpan di **memori** dan hilang saat dev server dimatikan, cocok untuk mencoba. Untuk memakai database sungguhan secara lokal, salin `.env.example` menjadi `.env.local` dan isi nilainya (atau jalankan `npx vercel env pull .env.local`).
+
 ## Belajar dari iPad atau HP (tanpa deploy)
 
 `localhost` hanya bisa dibuka dari laptop itu sendiri. Supaya bisa dibuka dari iPad/HP:
