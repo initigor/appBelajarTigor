@@ -12,4 +12,5 @@ export const chapters = [
   { id: 10, folder: '10-react-state', judul: 'React State', ikon: '🔁', deskripsi: 'useState, event, form terkontrol, state array & object.' },
   { id: 11, folder: '11-react-list', judul: 'React List & Kondisional', ikon: '📋', deskripsi: 'map + key, render kondisional, dan useEffect.' },
   { id: 12, folder: '12-proyek-akhir', judul: 'Proyek Akhir: Portofolio', ikon: '🏆', deskripsi: 'Bangun web portofolio mini langkah demi langkah.' },
+  { id: 13, folder: '13-backend-node', judul: 'Backend Node.js & API', ikon: '🔌', deskripsi: 'Node.js, npm, cara kerja HTTP, routing ala Express, REST API, middleware, sampai proyek kalkulator bisnis UMKM.' },
 ];

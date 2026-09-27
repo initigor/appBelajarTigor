@@ -344,6 +344,46 @@ a {
   gap: 16px;
   align-items: flex-start;
   margin-bottom: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 10px;
+}
+.chapter-kepala:hover .chapter-info h2 {
+  color: var(--aksen);
+}
+.chapter-kepala:focus-visible {
+  outline: 2px solid var(--aksen);
+  outline-offset: 4px;
+}
+.chapter-panah {
+  align-self: center;
+  font-size: 1.1rem;
+  color: var(--teks-2);
+  transform: rotate(-90deg);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.chapter-panah.terbuka {
+  transform: rotate(0deg);
+}
+.chapter-isi {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.chapter-isi.terbuka {
+  grid-template-rows: 1fr;
+}
+.chapter-isi-dalam {
+  overflow: hidden;
+  min-height: 0;
 }
 .chapter-ikon {
   font-size: 1.8rem;
