@@ -2,7 +2,7 @@
 
 Website latihan coding interaktif ala Codédex untuk belajar **JavaScript** sampai **React**, dalam Bahasa Indonesia. Setiap konsep dibandingkan dengan C dan Python. Website ini hanya berjalan di komputermu sendiri (localhost), tanpa login dan tanpa backend.
 
-- **12 chapter, 83 pelajaran**, dan setiap chapter ditutup dengan mini proyek
+- **13 chapter, 90 pelajaran**, dari dasar JavaScript sampai backend Node.js & API — setiap chapter ditutup dengan mini proyek
 - Editor kode (CodeMirror) + Console + Tes otomatis (✅/❌) + Preview untuk DOM/React
 - Petunjuk bertahap; tombol solusi baru muncul setelah 3 kali mencoba
 - XP, streak harian, progress per chapter, dan kode terakhir di tiap pelajaran disimpan di `localStorage`
@@ -149,7 +149,7 @@ Di layar sentuh, di atas editor muncul **baris simbol** (`( )`, `{ }`, `;`, `=>`
         ├── 01-dasar-js/
         │   ├── 01-console-log.js
         │   └── ...
-        └── ... sampai 12-proyek-akhir/
+        └── ... sampai 13-backend-node/
 ```
 
 ## Cara menambah pelajaran
