@@ -67,6 +67,17 @@ Akun bersifat **opsional**. Tanpa akun, progress tersimpan di perangkat (localSt
 
 Selama langkah di atas belum dilakukan, halaman Akun akan menampilkan pesan yang menjelaskan apa yang kurang.
 
+### Jika muncul "Database belum terhubung"
+Buka `https://<domain-kamu>/api/status` di browser. Halaman itu menampilkan env var database yang terbaca (hanya namanya), jenis database, hasil tes koneksi, dan status `AUTH_SECRET`.
+
+| Yang terlihat di /api/status | Artinya & solusinya |
+| --- | --- |
+| `envMiripDatabase: []` | Deployment ini belum menerima env var database. Pastikan database sudah **Connect** ke project dengan environment **Production** dicentang, lalu **Redeploy**. Env var hanya terbaca oleh deployment yang dibuat setelahnya. |
+| Ada nama env var, tapi `database: null` | Pasangan URL/token tidak lengkap. Cek **Settings → Environment Variables**. |
+| `koneksi: "gagal: ..."` | Env var ada tapi salah/kedaluwarsa. Hubungkan ulang database, lalu Redeploy. |
+
+Yang didukung: Upstash (`KV_REST_API_URL` + `KV_REST_API_TOKEN` atau `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`, boleh dengan prefix) dan Redis biasa (`REDIS_URL`).
+
 ### Cara kerja
 | Bagian | File |
 | --- | --- |
