@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { useProgress } from './state/progress.jsx';
 import Beranda from './pages/Beranda.jsx';
 import Pelajaran from './pages/Pelajaran.jsx';
+import PelajaranJava from './pages/PelajaranJava.jsx';
+import UjiPemahamanJava from './pages/UjiPemahamanJava.jsx';
 import Pengaturan from './pages/Pengaturan.jsx';
 import Install from './pages/Install.jsx';
 import Akun from './pages/Akun.jsx';
@@ -99,6 +101,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Beranda />} />
         <Route path="/belajar/:id" element={<Pelajaran />} />
+        <Route path="/java/belajar/:id" element={<PelajaranJava />} />
+        <Route path="/java/uji/:pekan" element={<UjiPemahamanJava />} />
         <Route path="/pengaturan" element={<Pengaturan />} />
         <Route path="/install" element={<Install />} />
         <Route path="/akun" element={<Akun />} />

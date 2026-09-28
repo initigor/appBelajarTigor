@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { jalankanJava, jalankanUji, statusJdk } from './server/javaRunner.js';
 
 // Menjalankan fungsi di folder api/ (Vercel Functions) di dev server lokal,
 // supaya fitur akun bisa dicoba dengan `npm run dev` tanpa Vercel CLI.
@@ -48,10 +49,71 @@ function apiLokal() {
   };
 }
 
+// Menjalankan kode Java sungguhan (javac lalu java) di komputer ini, HANYA saat `npm run dev`/`npm run preview`.
+// Di luar folder api/ dengan sengaja: tidak boleh ikut ter-deploy sebagai Vercel Function (di sana tidak ada JDK).
+// Jalur /devjava/ tidak pernah ada di build produksi (dist/), jadi di Vercel jalur ini otomatis 404 lewat rewrite SPA.
+function javaLokal() {
+  return {
+    name: 'java-lokal',
+    configureServer: (server) => pasangJavaLokal(server.middlewares),
+    configurePreviewServer: (server) => pasangJavaLokal(server.middlewares),
+  };
+}
+
+function pasangJavaLokal(middlewares) {
+  middlewares.use(async (req, res, next) => {
+    if (!req.url.startsWith('/devjava/')) return next();
+    const kirim = (status, body) => {
+      res.statusCode = status;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify(body));
+    };
+    try {
+      if (req.method === 'GET' && req.url === '/devjava/status') {
+        return kirim(200, await statusJdk());
+      }
+      if (req.method === 'POST' && req.url === '/devjava/run') {
+        const potongan = [];
+        for await (const c of req) potongan.push(c);
+        let body;
+        try {
+          body = JSON.parse(Buffer.concat(potongan).toString('utf8') || '{}');
+        } catch {
+          return kirim(400, { fase: 'internal', berhasil: false, pesan: 'Data permintaan tidak valid.' });
+        }
+        const { berkas, kelasUtama, stdin } = body;
+        if (!Array.isArray(berkas) || berkas.length === 0 || typeof kelasUtama !== 'string') {
+          return kirim(400, { fase: 'internal', berhasil: false, pesan: 'Permintaan harus menyertakan berkas[] dan kelasUtama.' });
+        }
+        return kirim(200, await jalankanJava({ berkas, kelasUtama, stdin: typeof stdin === 'string' ? stdin : '' }));
+      }
+      if (req.method === 'POST' && req.url === '/devjava/uji') {
+        const potongan = [];
+        for await (const c of req) potongan.push(c);
+        let body;
+        try {
+          body = JSON.parse(Buffer.concat(potongan).toString('utf8') || '{}');
+        } catch {
+          return kirim(400, { fase: 'internal', berhasil: false, pesan: 'Data permintaan tidak valid.' });
+        }
+        const { berkas, kelasUtama, kasus } = body;
+        if (!Array.isArray(berkas) || berkas.length === 0 || typeof kelasUtama !== 'string' || !Array.isArray(kasus)) {
+          return kirim(400, { fase: 'internal', berhasil: false, pesan: 'Permintaan harus menyertakan berkas[], kelasUtama, dan kasus[].' });
+        }
+        return kirim(200, await jalankanUji({ berkas, kelasUtama, kasus }));
+      }
+      return kirim(404, { pesan: 'Endpoint tidak ada.' });
+    } catch (e) {
+      return kirim(500, { fase: 'internal', berhasil: false, pesan: `Kesalahan server: ${e.message}` });
+    }
+  });
+}
+
 export default defineConfig({
   plugins: [
     react(),
     apiLokal(),
+    javaLokal(),
     // Membuat app bisa di-install (PWA) dan tetap jalan offline setelah dibuka sekali.
     VitePWA({
       registerType: 'autoUpdate',

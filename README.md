@@ -1,13 +1,14 @@
-# LatihKode: Latihan JavaScript → React
+# LatihKode: Latihan JavaScript → React & Java — PBO
 
-Website latihan coding interaktif ala Codédex untuk belajar **JavaScript** sampai **React**, dalam Bahasa Indonesia. Setiap konsep dibandingkan dengan C dan Python. Website ini hanya berjalan di komputermu sendiri (localhost), tanpa login dan tanpa backend.
+Website latihan coding interaktif ala Codédex, dalam Bahasa Indonesia, dengan **dua jalur belajar terpisah**: JavaScript → React, dan Java (Pemrograman Berorientasi Obyek). Setiap konsep dibandingkan dengan C dan Python. Website ini hanya berjalan di komputermu sendiri (localhost), tanpa login dan tanpa backend cloud wajib.
 
-- **13 chapter, 90 pelajaran**, dari dasar JavaScript sampai backend Node.js & API — setiap chapter ditutup dengan mini proyek
+- **Jalur JavaScript → React**: 13 chapter, 90 pelajaran, dari dasar JS sampai backend Node.js & API — setiap chapter ditutup dengan mini proyek. Dijalankan di Web Worker/iframe (aman, offline).
+- **Jalur Java — PBO** (lihat [bagian tersendiri di bawah](#course-java--pbo)): 2 pekan, 18 pelajaran, kode Java **sungguhan** dikompilasi & dijalankan lewat JDK di komputermu. Punya "Uji Pemahaman" (lewati pelajaran yang sudah dikuasai) dan "Latihan V-3" (persiapan verifikasi tatap muka).
 - Editor kode (CodeMirror) + Console + Tes otomatis (✅/❌) + Preview untuk DOM/React
 - Petunjuk bertahap; tombol solusi baru muncul setelah 3 kali mencoba
-- XP, streak harian, progress per chapter, dan kode terakhir di tiap pelajaran disimpan di `localStorage`
+- XP, streak harian, progress per chapter, dan kode terakhir di tiap pelajaran disimpan di `localStorage` (progress Java disimpan **terpisah** dari progress JS/React)
 - Tema terang/gelap, bisa ekspor/impor progress
-- Berjalan **offline** setelah `npm install`
+- Jalur JavaScript berjalan **offline** setelah `npm install`; jalur Java butuh JDK terpasang (lihat di bawah)
 
 ## Cara menjalankan
 
@@ -29,7 +30,9 @@ Lalu buka http://localhost:5173.
 | `npm run dev:hp` | Sama, tapi bisa dibuka dari iPad/HP di Wi-Fi yang sama |
 | `npm run build` | Membuat versi produksi di folder `dist/` |
 | `npm run preview` | Menjalankan hasil build |
-| `npm run check-lessons` | Mengecek semua pelajaran (lihat di bawah) |
+| `npm run check-lessons` | Mengecek semua pelajaran JS **dan** Java (lihat di bawah) |
+| `npm run check-lessons-java` | Mengecek pelajaran Java saja lewat JDK sungguhan |
+| `npm run check-bank-java` | Mengecek semua soal `prediksi-output` di bank Uji Pemahaman Java bisa dikompilasi & dijalankan |
 | `npm run ikon` | Membuat ulang ikon PNG aplikasi dari `public/ikon.svg` |
 
 ## Deploy ke Vercel & pasang sebagai aplikasi
@@ -118,38 +121,104 @@ Di layar sentuh, di atas editor muncul **baris simbol** (`( )`, `{ }`, `;`, `=>`
 > Progress disimpan per browser, jadi progress di laptop dan di iPad terpisah. Pindahkan dengan **Pengaturan → Ekspor/Impor progress**.
 > Selama `dev:hp` berjalan, website bisa dibuka siapa pun di Wi-Fi yang sama. Pakai di jaringan rumah, bukan Wi-Fi publik.
 
+## Course Java — PBO
+
+Jalur belajar Java (Pemrograman Berorientasi Obyek) mengikuti materi Pekan 2 (Dasar Pemrograman Java) dan Pekan 3 (Kelas dan Objek) mata kuliah PBO — tapi **berdiri sendiri**, tidak bercampur dengan materi JavaScript.
+
+### Wajib: pasang JDK
+
+Beda dengan jalur JavaScript, kode Java **benar-benar dikompilasi & dijalankan** (`javac` lalu `java`) di komputermu lewat server dev lokal — bukan simulasi.
+
+1. Pasang **Java Development Kit (JDK) 21** atau lebih baru — misalnya [Eclipse Temurin](https://adoptium.net/) atau [Microsoft Build of OpenJDK](https://learn.microsoft.com/java/openjdk/download).
+2. Pastikan JDK (bukan cuma JRE) masuk ke `PATH`: buka terminal **baru** lalu jalankan
+   ```bash
+   javac -version
+   java -version
+   ```
+   Keduanya harus mencetak nomor versi. Kalau hanya `java -version` yang berhasil, yang terpasang JRE, bukan JDK.
+3. Mulai ulang `npm run dev` supaya server dev membaca `PATH` yang baru.
+
+Kalau JDK belum terpasang, halaman pelajaran Java akan menampilkan instruksi pemasangan (bukan error mentah). Jalur JavaScript & React tidak terpengaruh sama sekali.
+
+**Penting:** fitur ini **hanya aktif lewat `npm run dev` / `npm run preview` di komputermu sendiri**. Endpoint `/devjava/*` sengaja tidak pernah ikut ter-deploy ke Vercel (tidak ada JDK di sana) — di situs produksi, jalur itu otomatis dikembalikan ke halaman utama.
+
+### Cara kerja
+
+| Bagian | File |
+| --- | --- |
+| Runner (spawn `javac`/`java`, timeout, batas output) | `server/javaRunner.js` |
+| Terjemahan pesan galat javac/java → Bahasa Indonesia | `server/javaGalat.js` |
+| Plugin Vite yang menyambungkan runner ke browser (`/devjava/status`, `/devjava/run`, `/devjava/uji`) | `vite.config.js` (fungsi `javaLokal()`) |
+| Klien di browser (compile+run, urai hasil tes, dsb.) | `src/engine/javaClient.js` |
+| Halaman pelajaran & Uji Pemahaman | `src/pages/PelajaranJava.jsx`, `src/pages/UjiPemahamanJava.jsx` |
+| Progress (terpisah dari JS/React) | `src/state/progressJava.jsx` |
+| Konten pelajaran & bank soal | `src/lessonsJava/` |
+
+### Lima jenis latihan (`subtipe` pada tiap pelajaran)
+
+| `subtipe` | Cara dites | Contoh field wajib |
+| --- | --- | --- |
+| `kode-output` | Kompilasi sekali, jalankan dengan beberapa `stdin`, bandingkan `stdout` | `kelasUtama`, `kodeAwal`, `solusi`, `tes: [{nama, stdin, harap}]` |
+| `kode-kelas` | Kode siswa dikompilasi bersama kelas tester tersembunyi (`Penguji.java` + `tesUtamaIsi`) yang memakai **reflection** untuk memeriksa `private`, constructor, `static` | `tesUtamaNama`, `tesUtamaIsi`, `daftarTes` |
+| `prediksi` | Siswa menulis prediksi output, cuplikan dijalankan sungguhan untuk membandingkan | `kodeCuplikan`, `penjelasan` |
+| `bedah-galat` | Kode bermasalah dijalankan otomatis untuk menangkap pesan galat asli; siswa menjawab pilihan ganda lalu memperbaiki kodenya | `kodeBermasalah`, `pilihanPenyebab`, `jenisGalatBenar`, `solusi`, `tes` |
+| `diagram-memori` | Pilihan ganda tentang objek/rujukan pada sebuah cuplikan, dikonfirmasi dengan menjalankannya | `kodeCuplikan`, `pertanyaan: [{judul, teks, pilihan}]` |
+
+Helper reflection tersembunyi (`Penguji.java`) ada di `src/lessonsJava/_bersama/penguji.js` — jangan diubah per-pelajaran, cukup panggil `Penguji.cek(nama, kondisi, pesanGagal)` dkk. dari `tesUtamaIsi`.
+
+### Uji Pemahaman & Latihan V-3
+
+Tiap pekan (Pekan 2 **dan** Pekan 3) punya dua jalur saat pertama kali dibuka: **"Uji Pemahaman"** (lewati pekan itu kalau sudah dikuasai) atau **"Belajar dari awal"**. Uji Pemahaman menampilkan 2 soal per pelajaran (diacak dari bank ≥4 soal/pelajaran di `src/lessonsJava/_bersama/bankPekan2.js` / `bankPekan3.js`) — pelajaran yang semua soalnya benar otomatis ditandai selesai, sisanya masuk daftar **remedial** (bisa diulang dengan soal baru lewat "Uji ulang bagian yang salah"). Pekan 3 juga punya **"Latihan V-3"** (`?v3=1`) — format sama, tapi murni catatan latihan (tidak mengubah status pelajaran), untuk persiapan verifikasi tatap muka di kelas.
+
+### Cara menambah pelajaran atau soal Java
+
+1. Pelajaran baru: buat file di `src/lessonsJava/pekan-2/` atau `pekan-3/` (urutan mengikuti nama file), isi sesuai `subtipe` yang dipilih (lihat contoh pelajaran yang ada untuk masing-masing subtipe).
+2. Soal bank: tambahkan ke object `bankPekan2`/`bankPekan3` di `src/lessonsJava/_bersama/`, dengan `id` unik dan `lessonId` yang cocok — minimal 4 soal per pelajaran.
+3. Jalankan `npm run check-lessons-java -- <sebagian-id>` untuk memverifikasi solusinya benar-benar lolos lewat JDK.
+
 ## Struktur folder
 
 ```
 ├── index.html
-├── vite.config.js
+├── vite.config.js             # + plugin javaLokal() untuk runner Java (dev only)
+├── server/
+│   ├── javaRunner.js          # spawn javac/java, timeout, batas output
+│   └── javaGalat.js           # terjemahan pesan galat javac/java
 ├── scripts/
-│   └── check-lessons.js      # cek otomatis: solusi lolos tes, kodeAwal belum lolos
+│   ├── check-lessons.js       # cek pelajaran JS: solusi lolos tes, kodeAwal belum lolos
+│   └── check-lessons-java.js  # cek pelajaran Java lewat JDK sungguhan
 └── src/
     ├── main.jsx, App.jsx      # entry, router, header
     ├── styles.css             # semua CSS + tema terang/gelap
     ├── pages/
-    │   ├── Beranda.jsx        # peta chapter, XP, streak
-    │   ├── Pelajaran.jsx      # halaman latihan (materi | editor + console/tes/preview)
+    │   ├── Beranda.jsx        # peta chapter JS + jalur Java, XP, streak
+    │   ├── Pelajaran.jsx      # halaman latihan JS (materi | editor + console/tes/preview)
+    │   ├── PelajaranJava.jsx  # halaman latihan Java (kelima subtipe)
+    │   ├── UjiPemahamanJava.jsx  # Uji Pemahaman & Latihan V-3
     │   └── Pengaturan.jsx     # tema, ekspor/impor, reset progress
-    ├── components/            # Editor, Markdown, ProgressBar, Confetti
-    ├── state/progress.jsx     # progress, XP, streak, tema (localStorage)
+    ├── components/            # Editor, EditorJava, Markdown, ProgressBar, Confetti, ChapterCard
+    ├── state/
+    │   ├── progress.jsx       # progress JS/React (localStorage)
+    │   └── progressJava.jsx   # progress Java: TERPISAH, + jalur/remedial/riwayat uji
     ├── engine/
     │   ├── runner.js          # memilih worker (js) atau iframe (dom/react)
     │   ├── jsWorker.js        # Web Worker untuk pelajaran JS (dimatikan setelah 3 detik)
     │   ├── jsEngine.js        # eksekusi kode JS + tes
     │   ├── domEngine.js       # eksekusi DOM/React di iframe (atau jsdom saat check-lessons)
+    │   ├── javaClient.js      # klien browser utk runner Java (/devjava/*)
     │   ├── babel.js           # compile JSX, import/export, pengaman infinite loop
     │   ├── tes.js             # sistem tes, pesan error ramah
     │   └── format.js          # format nilai untuk console
-    └── lessons/
-        ├── chapters.js        # daftar chapter
-        ├── index.js / susun.js
-        ├── _bersama/          # helper (bukan pelajaran): fetch palsu, potongan kode portofolio
-        ├── 01-dasar-js/
-        │   ├── 01-console-log.js
-        │   └── ...
-        └── ... sampai 13-backend-node/
+    ├── lessons/               # konten jalur JavaScript → React
+    │   ├── chapters.js, index.js, susun.js
+    │   ├── _bersama/          # helper (bukan pelajaran): fetch palsu, potongan kode portofolio
+    │   ├── 01-dasar-js/
+    │   └── ... sampai 13-backend-node/
+    └── lessonsJava/           # konten jalur Java — PBO
+        ├── chapters.js, index.js, susun.js
+        ├── _bersama/          # Penguji.java, bank soal Uji Pemahaman, helper soal
+        ├── pekan-2/
+        └── pekan-3/
 ```
 
 ## Cara menambah pelajaran
@@ -242,16 +311,18 @@ Helper untuk pesan tes bisa di-import dari `src/engine/tes.js`: `gagal(pesan)`, 
 
 ## `npm run check-lessons`
 
-Script ini menjalankan setiap pelajaran di Node (DOM/React memakai jsdom) dan memastikan:
-1. **solusi** lolos semua tesnya sendiri
-2. **kodeAwal** belum lolos semua tes (supaya tidak ada latihan "gratis")
+Menjalankan **kedua** checker berurutan:
+
+1. `scripts/check-lessons.js` — tiap pelajaran JS di Node (DOM/React memakai jsdom), memastikan **solusi** lolos semua tesnya sendiri dan **kodeAwal** belum lolos semua tes (supaya tidak ada latihan "gratis").
+2. `scripts/check-lessons-java.js` — tiap pelajaran Java lewat JDK sungguhan (butuh `javac`/`java` di `PATH`; kalau tidak ada, langkah ini dilewati dengan pesan jelas), dengan pemeriksaan yang disesuaikan per `subtipe` (lihat bagian Course Java — PBO).
 
 ```bash
 npm run check-lessons
 ```
 
 ```bash
-npm run check-lessons -- react
+npm run check-lessons -- react       # filter pelajaran JS
+npm run check-lessons-java -- array  # filter pelajaran Java saja
 ```
 
 ## Cara kerja singkat
@@ -259,3 +330,4 @@ npm run check-lessons -- react
 - **Pelajaran JS** dijalankan di **Web Worker**. `console.log` ditangkap dan dikirim ke panel Console. Jika kode berjalan lebih dari 3 detik (misalnya infinite loop), worker dimatikan dan dibuat ulang. `setTimeout`/Promise ditunggu sampai selesai (maks. 2 detik) sebelum tes dijalankan. Chapter 8 memakai `fetch` tiruan (`src/lessons/_bersama/apiPalsu.js`), jadi tetap bisa offline.
 - **Pelajaran DOM/React** dijalankan di **iframe** (tab Preview). Iframe tidak bisa "dimatikan" seperti worker, jadi setiap loop disisipi pengaman lewat Babel: loop yang berjalan lebih dari 2 detik dihentikan dengan pesan error.
 - **JSX** di-compile oleh `@babel/standalone` (dari npm, bukan CDN). `import { useState } from "react"` dan `export default App` didukung. React 19 tidak lagi menyediakan build UMD, jadi React untuk preview diambil dari bundle aplikasi.
+- **Pelajaran Java** dijalankan **sungguhan** lewat `javac`/`java` di komputermu (bukan Worker/iframe) — lihat bagian **Course Java — PBO** di atas untuk detail lengkap.
