@@ -8,6 +8,7 @@ import UjiPemahamanJava from './pages/UjiPemahamanJava.jsx';
 import Pengaturan from './pages/Pengaturan.jsx';
 import Install from './pages/Install.jsx';
 import Akun from './pages/Akun.jsx';
+import Lab from './pages/Lab.jsx';
 import { useAkun } from './state/akun.jsx';
 import { useInstall } from './state/install.js';
 import { panaskanWorker } from './engine/runner.js';
@@ -106,6 +107,7 @@ export default function App() {
         <Route path="/pengaturan" element={<Pengaturan />} />
         <Route path="/install" element={<Install />} />
         <Route path="/akun" element={<Akun />} />
+        <Route path="/lab" element={<Lab />} />
         <Route path="*" element={<TidakDitemukan />} />
       </Routes>
     </div>

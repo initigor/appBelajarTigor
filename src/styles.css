@@ -1007,6 +1007,90 @@ a {
   display: inline-block;
 }
 
+/* ---------- /lab: uji kelayakan runtime browser ---------- */
+.lab-halaman {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 64px);
+  max-width: none;
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+.lab-kepala {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lab-kepala h1 {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+}
+.lab-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.lab-bahasa {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-2);
+  border: 1px solid var(--garis);
+  border-radius: 10px;
+  padding: 4px;
+}
+.lab-bahasa .tab {
+  border-radius: 6px;
+}
+.lab-bahasa .tab.aktif {
+  background: var(--aksen);
+  color: #fff;
+  border-bottom-color: transparent;
+}
+.lab-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--teks-2);
+}
+.lab-status .progress {
+  flex: 1;
+  max-width: 260px;
+}
+.lab-split {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  min-height: 300px;
+}
+.lab-editor {
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.lab-terminal {
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #12111c;
+  padding: 6px;
+}
+.lab-catatan {
+  font-size: 0.82rem;
+}
+@media (max-width: 900px) {
+  .lab-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
 /* ---------- Markdown ---------- */
 .md {
   font-size: 0.97rem;

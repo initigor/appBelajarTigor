@@ -121,9 +121,45 @@ Di layar sentuh, di atas editor muncul **baris simbol** (`( )`, `{ }`, `;`, `=>`
 > Progress disimpan per browser, jadi progress di laptop dan di iPad terpisah. Pindahkan dengan **Pengaturan → Ekspor/Impor progress**.
 > Selama `dev:hp` berjalan, website bisa dibuka siapa pun di Wi-Fi yang sama. Pakai di jaringan rumah, bukan Wi-Fi publik.
 
+## `/lab`: Uji Kelayakan Runtime Browser (WebAssembly, tanpa server)
+
+Sedang dieksplorasi: menjalankan **semua** bahasa (JS, Python, Java) langsung di browser lewat WebAssembly — tanpa server eksekusi kode — supaya situs bisa di-deploy sebagai frontend statis murni (Vercel Hobby gratis) dan dipakai dari perangkat mana pun termasuk iPad. Halaman `/lab` adalah purwarupa uji kelayakan: satu editor, satu terminal (xterm.js), tombol Jalankan per bahasa.
+
+**Status per 28 Sept 2026** (dites di lingkungan pengembangan; JDK 25 + Chromium modern dengan SharedArrayBuffer/Atomics penuh):
+
+| Bahasa | Runtime | Status |
+| --- | --- | --- |
+| JavaScript | Web Worker | ✅ Bekerja, termasuk `prompt()` interaktif (jembatan pesan async ke terminal) |
+| Python | [Pyodide](https://pyodide.org/) di Web Worker | ✅ Bekerja, termasuk `input()` interaktif sungguhan (SharedArrayBuffer + `Atomics.wait`, mengikuti [pola resmi Pyodide](https://pyodide.org/en/stable/usage/streams.html)) |
+| Java | [CheerpJ 4.3](https://cheerpj.com/) (JVM WebAssembly), kompilasi lewat `javac` yang berjalan di dalam CheerpJ sendiri (pola dari [leaningtech/javafiddle](https://github.com/leaningtech/javafiddle), pakai `tools.jar` OpenJDK di `public/java/tools.jar`) | ⚠️ **Belum berhasil** — lihat di bawah |
+
+### Temuan uji Java/CheerpJ
+
+- `cheerpjInit()` selesai cepat (~50ms) dan berhasil.
+- **`cheerpjRunMain(...)` tidak pernah selesai** (menggantung tanpa pesan galat, tanpa aktivitas jaringan sama sekali — bahkan `tools.jar` tidak pernah diminta) — sudah dicoba: program trivial (`java.lang.System`, tanpa `main`), classpath tanpa `tools.jar` sama sekali, kontainer display yang benar (bukan elemen ber-id `cheerpjDisplay` yang salah dipakai di percobaan pertama), dan **kedua** mode `Cross-Origin-Embedder-Policy` (`credentialless` maupun `require-corp`) — hasilnya sama: menggantung tanpa batas waktu yang jelas (diuji sampai ±4 menit).
+- Lingkungan uji sendiri terverifikasi mendukung penuh: `crossOriginIsolated: true`, `SharedArrayBuffer`/`Atomics` tersedia, Chromium modern (v152).
+- **Tidak ditemukan API resmi CheerpJ untuk stdin/`Scanner` interaktif** (tidak ada di `cheerpjRunMain`, tidak ada opsi terkait di `cheerpjInit`, dan proyek referensi javafiddle sendiri **tidak** mengimplementasikannya). Opsi `natives` di `cheerpjInit` ternyata untuk method `native` **milik kelas buatan sendiri**, bukan untuk meng-override `System.in` bawaan JDK yang dipakai CheerpJ.
+- **Belum bisa disimpulkan** apakah ini bug/batasan CheerpJ, ketidakcocokan dengan lingkungan pengujian (browser Chromium yang disematkan di dalam aplikasi desktop Claude), atau sesuatu yang spesifik pengaturan proyek ini — perlu diuji di **Safari iPad sungguhan** (lingkungan target sebenarnya) untuk memastikan.
+
+### Temuan lain: regresi COOP/COEP yang sudah diperbaiki
+
+Memasang header `Cross-Origin-Opener-Policy`/`Cross-Origin-Embedder-Policy` (wajib untuk `SharedArrayBuffer`) sempat **mematahkan seluruh course JavaScript yang sudah ada** — Worker modul (`src/engine/jsWorker.js`) gagal dimuat (`ERR_BLOCKED_BY_RESPONSE`) karena jalur internal Vite untuk mentransformasi entry Worker (`?worker_file`) ternyata **tidak** menyertakan header yang diset lewat `server.headers`/`preview.headers`. Diperbaiki dengan memasang header itu lewat middleware sendiri (plugin `headerIsolasiSilangAsal()`, `enforce: 'pre'`) di [vite.config.js](vite.config.js) — sudah diverifikasi ulang: seluruh pelajaran JS **dan** DOM/React kembali berjalan normal.
+
+### Lisensi CheerpJ
+
+CheerpJ Community Edition **gratis untuk penggunaan personal/non-komersial saja** (dikonfirmasi dari banner konsol saat runtime dimuat: "FOR PERSONAL AND NON-BUSINESS USE ONLY"). `tools.jar` yang dipakai untuk kompilasi berasal dari OpenJDK (GPL v2 + Classpath Exception, dari proyek open-source `leaningtech/javafiddle`, MIT). Atribusi lengkap akan ditambahkan ke README dan halaman "Tentang" begitu jalur Java ini benar-benar dipakai.
+
+### Cara mencoba `/lab` secara lokal
+
+```bash
+npm run dev
+```
+
+Buka `http://localhost:5173/lab`. Chip "Cross-origin isolated" di kanan atas harus ✅ (kalau ⚠️, `input()` Python tidak akan interaktif).
+
 ## Course Java — PBO
 
-Jalur belajar Java (Pemrograman Berorientasi Obyek) mengikuti materi Pekan 2 (Dasar Pemrograman Java) dan Pekan 3 (Kelas dan Objek) mata kuliah PBO — tapi **berdiri sendiri**, tidak bercampur dengan materi JavaScript.
+Jalur belajar Java (Pemrograman Berorientasi Obyek) mengikuti materi Pekan 2 (Dasar Pemrograman Java) dan Pekan 3 (Kelas dan Objek) mata kuliah PBO — tapi **berdiri sendiri**, tidak bercampur dengan materi JavaScript. (Course ini masih memakai runner server lokal `javac`/`java`, lihat di bawah — belum dipindahkan ke CheerpJ karena status uji kelayakan di atas.)
 
 ### Wajib: pasang JDK
 

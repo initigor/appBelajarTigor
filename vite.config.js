@@ -3,6 +3,27 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { jalankanJava, jalankanUji, statusJdk } from './server/javaRunner.js';
 
+// `server.headers`/`preview.headers` Vite TIDAK dipasang pada respons internal `?worker_file`
+// (jalur khusus Vite utk mentransformasi entry Worker) — jadi Worker module (mis. engine/jsWorker.js)
+// gagal dimuat begitu COOP/COEP aktif (ERR_BLOCKED_BY_RESPONSE). Pasang manual lewat middleware sendiri,
+// paling awal, supaya berlaku ke SEMUA respons termasuk yang dilewati handler internal itu.
+function headerIsolasiSilangAsal() {
+  const pasang = (middlewares) => {
+    middlewares.use((req, res, next) => {
+      res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+      res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      next();
+    });
+  };
+  return {
+    name: 'header-isolasi-silang-asal',
+    enforce: 'pre',
+    configureServer: (server) => pasang(server.middlewares),
+    configurePreviewServer: (server) => pasang(server.middlewares),
+  };
+}
+
 // Menjalankan fungsi di folder api/ (Vercel Functions) di dev server lokal,
 // supaya fitur akun bisa dicoba dengan `npm run dev` tanpa Vercel CLI.
 // Tanpa env var database, server memakai database sementara di memori.
@@ -111,6 +132,7 @@ function pasangJavaLokal(middlewares) {
 
 export default defineConfig({
   plugins: [
+    headerIsolasiSilangAsal(),
     react(),
     apiLokal(),
     javaLokal(),
@@ -146,6 +168,9 @@ export default defineConfig({
     }),
   ],
   worker: { format: 'es' },
+  // Cross-origin isolation (dibutuhkan SharedArrayBuffer -> stdin interaktif Python/Pyodide di /lab)
+  // dipasang lewat plugin headerIsolasiSilangAsal() di atas, bukan di sini — lihat catatan di plugin itu.
+  // Header yang sama juga dipasang di vercel.json untuk produksi.
   server: { port: 5173 },
   build: { chunkSizeWarningLimit: 5000 },
 });
