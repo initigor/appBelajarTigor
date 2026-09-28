@@ -781,6 +781,232 @@ a {
   align-items: center;
 }
 
+/* ---------- Java: editor multi-berkas & latihan interaktif (prediksi/bedah-galat/diagram-memori) ---------- */
+.editor-java {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.editor-java .editor {
+  flex: 1;
+  min-height: 0;
+}
+.tab-berkas {
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px 0;
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--garis);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.tab-berkas-item {
+  font: inherit;
+  font-size: 0.78rem;
+  font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  background: transparent;
+  border: 1px solid var(--garis);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 5px 12px;
+  cursor: pointer;
+  color: var(--teks-2);
+}
+.tab-berkas-item.aktif {
+  background: var(--bg-2);
+  color: var(--teks);
+  font-weight: 700;
+}
+.panel-soal {
+  height: 100%;
+  overflow: auto;
+  padding: 14px 16px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+.panel-soal .editor-java {
+  height: 220px;
+  border: 1px solid var(--garis);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.label-panel-soal {
+  margin: 0;
+  color: var(--teks-2);
+  font-size: 0.92rem;
+}
+.area-prediksi {
+  font: inherit;
+  font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--garis);
+  background: var(--bg-2);
+  color: var(--teks);
+  resize: vertical;
+}
+.pertanyaan-diagram {
+  display: grid;
+  gap: 8px;
+}
+.pilihan-ganda {
+  display: grid;
+  gap: 6px;
+}
+.pilihan-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--garis);
+  border-radius: 10px;
+  background: var(--bg-2);
+  cursor: pointer;
+  font-size: 0.92rem;
+}
+.pilihan-item.dipilih {
+  border-color: var(--aksen);
+  background: var(--aksen-lembut);
+}
+.galat-asli {
+  display: grid;
+  gap: 6px;
+}
+
+/* ---------- Java: Uji Pemahaman ---------- */
+.pilihan-jalur {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  max-width: 420px;
+}
+.kartu-soal {
+  background: var(--bg-2);
+  border: 1px solid var(--garis);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin: 14px 0;
+}
+.panel-soal-uji {
+  display: grid;
+  gap: 14px;
+}
+.panel-soal-uji .editor-java {
+  height: 220px;
+  border: 1px solid var(--garis);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.isian-singkat {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--garis);
+  background: var(--bg);
+  color: var(--teks);
+}
+.nav-soal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.titik-soal {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.titik {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--garis);
+  background: var(--bg-3);
+  padding: 0;
+  cursor: pointer;
+}
+.titik.terisi {
+  background: var(--aksen);
+  border-color: var(--aksen);
+}
+.titik.aktif {
+  outline: 2px solid var(--aksen);
+  outline-offset: 2px;
+}
+.daftar-hasil-uji {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+.hasil-uji-lesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--garis);
+  background: var(--bg-2);
+}
+.hasil-uji-lesson .item-judul {
+  flex: 1;
+}
+.hasil-uji-lesson.lolos {
+  border-color: color-mix(in srgb, var(--hijau) 45%, transparent);
+}
+.hasil-uji-lesson.gagal {
+  border-color: color-mix(in srgb, var(--merah) 45%, transparent);
+}
+.tinjauan-soal {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+.pemisah-jalur {
+  margin: 34px 0 8px;
+  text-align: center;
+  position: relative;
+}
+.pemisah-garis {
+  display: block;
+  height: 1px;
+  background: var(--garis);
+  margin-bottom: 18px;
+}
+.pemisah-jalur h2 {
+  margin: 0 0 4px;
+}
+.statistik-java {
+  margin: 14px 0;
+}
+.pilihan-jalur-kecil {
+  padding: 14px 4px 4px;
+  max-width: none;
+}
+.tombol-jalur-baris {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.label-remedial {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--merah);
+  background: var(--merah-lembut);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.item-pelajaran.remedial {
+  border-color: color-mix(in srgb, var(--merah) 40%, transparent);
+}
+.tombol-v3 {
+  margin-top: 14px;
+  display: inline-block;
+}
+
 /* ---------- Markdown ---------- */
 .md {
   font-size: 0.97rem;

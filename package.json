@@ -8,12 +8,15 @@
     "dev:hp": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "check-lessons": "node scripts/check-lessons.js",
+    "check-lessons": "node scripts/check-lessons.js && node scripts/check-lessons-java.js",
+    "check-lessons-java": "node scripts/check-lessons-java.js",
+    "check-bank-java": "node scripts/check-bank-java.js",
     "ikon": "node scripts/buat-ikon.js"
   },
   "dependencies": {
     "@babel/standalone": "^7.29.9",
     "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-java": "^6.0.2",
     "@codemirror/lang-javascript": "^6.2.5",
     "@codemirror/state": "^6.7.6",
     "@codemirror/theme-one-dark": "^6.1.3",
