@@ -44,6 +44,7 @@ export default function Lab() {
   const [jalan, setJalan] = useState(false);
   const [status, setStatus] = useState(null); // { pesan, persen }
   const [isolasi, setIsolasi] = useState(null); // crossOriginIsolated?
+  const [tungguInput, setTungguInput] = useState(false); // true = program sedang menunggu kamu mengetik di terminal
 
   const { elRef, termRef, tulis, tulisBaris, bersihkan } = useTerminal();
   const pembacaRef = useRef(null);
@@ -70,7 +71,12 @@ export default function Lab() {
 
   const mintaBaris = async () => {
     if (!pembacaRef.current) pembacaRef.current = bikinPembacaBaris(termRef.current);
-    return pembacaRef.current.bacaBaris();
+    setTungguInput(true);
+    try {
+      return await pembacaRef.current.bacaBaris();
+    } finally {
+      setTungguInput(false);
+    }
   };
 
   const jalankanJs = () =>
@@ -131,6 +137,7 @@ export default function Lab() {
   const jalankan = async () => {
     if (jalan) return;
     setJalan(true);
+    setTungguInput(false);
     bersihkan();
     tulisBaris(`--- menjalankan ${bahasa} ---`);
     try {
@@ -187,6 +194,12 @@ export default function Lab() {
         </div>
       )}
 
+      {tungguInput && (
+        <div className="lab-tunggu-input">
+          ⌨️ Program sedang menunggu input — ketik di dalam kotak terminal di bawah, lalu tekan Enter.
+        </div>
+      )}
+
       <div className="lab-split">
         <div className="lab-editor">
           <Editor
@@ -197,7 +210,7 @@ export default function Lab() {
             gelap
           />
         </div>
-        <div className="lab-terminal" ref={elRef} />
+        <div className={`lab-terminal ${tungguInput ? 'lab-terminal-tunggu' : ''}`} ref={elRef} />
       </div>
 
       <p className="teks-redup lab-catatan">

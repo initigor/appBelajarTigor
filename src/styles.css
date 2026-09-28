@@ -1080,6 +1080,20 @@ a {
   overflow: hidden;
   background: #12111c;
   padding: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.lab-terminal-tunggu {
+  border-color: var(--hijau);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hijau) 25%, transparent);
+}
+.lab-tunggu-input {
+  background: var(--hijau-lembut);
+  color: var(--hijau);
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  animation: muncul 0.25s ease;
 }
 .lab-catatan {
   font-size: 0.82rem;

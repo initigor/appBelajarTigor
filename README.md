@@ -131,15 +131,17 @@ Sedang dieksplorasi: menjalankan **semua** bahasa (JS, Python, Java) langsung di
 | --- | --- | --- |
 | JavaScript | Web Worker | ✅ Bekerja, termasuk `prompt()` interaktif (jembatan pesan async ke terminal) |
 | Python | [Pyodide](https://pyodide.org/) di Web Worker | ✅ Bekerja, termasuk `input()` interaktif sungguhan (SharedArrayBuffer + `Atomics.wait`, mengikuti [pola resmi Pyodide](https://pyodide.org/en/stable/usage/streams.html)) |
-| Java | [CheerpJ 4.3](https://cheerpj.com/) (JVM WebAssembly), kompilasi lewat `javac` yang berjalan di dalam CheerpJ sendiri (pola dari [leaningtech/javafiddle](https://github.com/leaningtech/javafiddle), pakai `tools.jar` OpenJDK di `public/java/tools.jar`) | ⚠️ **Belum berhasil** — lihat di bawah |
+| Java | [CheerpJ 4.3](https://cheerpj.com/) (JVM WebAssembly), kompilasi lewat `javac` yang berjalan di dalam CheerpJ sendiri (pola dari [leaningtech/javafiddle](https://github.com/leaningtech/javafiddle), pakai `tools.jar` OpenJDK di `public/java/tools.jar`) | ❌ **Tidak layak** — lihat kesimpulan di bawah |
 
-### Temuan uji Java/CheerpJ
+### Temuan uji Java/CheerpJ — KESIMPULAN: CheerpJ tidak dipakai untuk Java
 
 - `cheerpjInit()` selesai cepat (~50ms) dan berhasil.
-- **`cheerpjRunMain(...)` tidak pernah selesai** (menggantung tanpa pesan galat, tanpa aktivitas jaringan sama sekali — bahkan `tools.jar` tidak pernah diminta) — sudah dicoba: program trivial (`java.lang.System`, tanpa `main`), classpath tanpa `tools.jar` sama sekali, kontainer display yang benar (bukan elemen ber-id `cheerpjDisplay` yang salah dipakai di percobaan pertama), dan **kedua** mode `Cross-Origin-Embedder-Policy` (`credentialless` maupun `require-corp`) — hasilnya sama: menggantung tanpa batas waktu yang jelas (diuji sampai ±4 menit).
-- Lingkungan uji sendiri terverifikasi mendukung penuh: `crossOriginIsolated: true`, `SharedArrayBuffer`/`Atomics` tersedia, Chromium modern (v152).
-- **Tidak ditemukan API resmi CheerpJ untuk stdin/`Scanner` interaktif** (tidak ada di `cheerpjRunMain`, tidak ada opsi terkait di `cheerpjInit`, dan proyek referensi javafiddle sendiri **tidak** mengimplementasikannya). Opsi `natives` di `cheerpjInit` ternyata untuk method `native` **milik kelas buatan sendiri**, bukan untuk meng-override `System.in` bawaan JDK yang dipakai CheerpJ.
-- **Belum bisa disimpulkan** apakah ini bug/batasan CheerpJ, ketidakcocokan dengan lingkungan pengujian (browser Chromium yang disematkan di dalam aplikasi desktop Claude), atau sesuatu yang spesifik pengaturan proyek ini — perlu diuji di **Safari iPad sungguhan** (lingkungan target sebenarnya) untuk memastikan.
+- **`cheerpjRunMain(...)` tidak pernah selesai** (menggantung tanpa pesan galat, tanpa aktivitas jaringan sama sekali) — dicoba: program trivial tanpa `main`, classpath tanpa `tools.jar` sama sekali, kontainer display yang benar, **kedua** mode COEP (`credentialless`/`require-corp`), dan versi CheerpJ 3.1 (API-nya beda, tidak cocok dengan pola javafiddle) — semua menggantung tanpa batas (diuji sampai ±4 menit).
+- **Dikonfirmasi ulang oleh pengguna di Safari iPad A16 sungguhan (lingkungan target sebenarnya): sama-sama menggantung tanpa akhir.** Jadi ini bukan sekadar keanehan lingkungan pengujian (Chromium yang disematkan di aplikasi desktop Claude) — reproducible di dua browser engine berbeda.
+- **Kemungkinan penyebab** (dari riset komunitas CheerpJ, bukan dugaan semata): CheerpJ menjalankan **seluruh** thread Java di atas **satu** thread JavaScript secara kooperatif (bukan preemptive seperti JVM sungguhan). Ada laporan pengguna lain dengan gejala serupa ("hangs after main is starting") yang disebabkan kode yang tidak pernah menyerahkan kendali (busy-wait/spin-loop) — `javac` adalah program besar dan kompleks yang kemungkinan memakai pola sinkronisasi yang tidak cocok dengan model ini.
+- **Tidak ditemukan API resmi CheerpJ untuk stdin/`Scanner` interaktif** sama sekali (tidak relevan lagi karena compile+run dasarnya sudah tidak jalan).
+
+**Keputusan:** jalur Java **tetap memakai runner lokal `javac`/`java` sungguhan** (lihat bagian "Course Java — PBO" di bawah, sudah terverifikasi bekerja sempurna) — artinya course Java **hanya bisa dipakai lewat `npm run dev` di komputer dengan JDK terpasang**, bukan lewat deploy Vercel/diakses dari iPad. Jalur JavaScript dan Python **tetap lanjut** memakai runtime WebAssembly di atas (keduanya sudah terbukti bekerja, termasuk di Safari iPad sungguhan untuk Python) untuk mencapai tujuan "bisa di-deploy & dipakai dari mana saja dengan biaya nol".
 
 ### Temuan lain: regresi COOP/COEP yang sudah diperbaiki
 
