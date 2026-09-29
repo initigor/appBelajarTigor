@@ -214,6 +214,14 @@ a {
   background: var(--hijau);
   filter: brightness(1.08);
 }
+.tombol-berhenti {
+  background: var(--merah);
+  color: #fff;
+}
+.tombol-berhenti:hover:not(:disabled) {
+  background: var(--merah);
+  filter: brightness(1.1);
+}
 .tombol-lanjut {
   background: var(--kuning);
   color: #2a1f00;
@@ -1005,6 +1013,304 @@ a {
 .tombol-v3 {
   margin-top: 14px;
   display: inline-block;
+}
+
+/* ---------- /lab: uji kelayakan runtime browser ---------- */
+.lab-halaman {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 64px);
+  max-width: none;
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+.lab-kepala {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lab-kepala h1 {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+}
+.lab-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.lab-bahasa {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-2);
+  border: 1px solid var(--garis);
+  border-radius: 10px;
+  padding: 4px;
+}
+.lab-bahasa .tab {
+  border-radius: 6px;
+}
+.lab-bahasa .tab.aktif {
+  background: var(--aksen);
+  color: #fff;
+  border-bottom-color: transparent;
+}
+.lab-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--teks-2);
+}
+.lab-status .progress {
+  flex: 1;
+  max-width: 260px;
+}
+.lab-split {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  min-height: 300px;
+}
+.lab-editor {
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.lab-terminal {
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #12111c;
+  padding: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.lab-terminal-tunggu {
+  border-color: var(--hijau);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hijau) 25%, transparent);
+}
+.lab-tunggu-input {
+  background: var(--hijau-lembut);
+  color: var(--hijau);
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  animation: muncul 0.25s ease;
+}
+.lab-catatan {
+  font-size: 0.82rem;
+}
+@media (max-width: 900px) {
+  .lab-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+/* ---------- Workspace ---------- */
+.hero-workspace {
+  grid-template-columns: 1fr;
+}
+.workspace-buat {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 18px 0;
+}
+.workspace-pilih-bahasa {
+  font: inherit;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--garis);
+  background: var(--bg-2);
+  color: var(--teks);
+}
+.daftar-workspace {
+  display: grid;
+  gap: 10px;
+}
+.kartu-workspace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--garis);
+  border-radius: 14px;
+  padding: 6px 10px 6px 6px;
+}
+.kartu-workspace-isi {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 8px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 10px;
+}
+.kartu-workspace-isi:hover {
+  background: var(--bg-3);
+}
+.chip-bahasa {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+.chip-bahasa-javascript {
+  background: #f0db4f33;
+  color: #f0db4f;
+}
+.chip-bahasa-python {
+  background: #4b8bbe33;
+  color: #4b8bbe;
+}
+.chip-bahasa-kecil {
+  font-size: 0.75rem;
+  color: var(--teks-2);
+  background: var(--bg-3);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.workspace-halaman {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: calc(100vh - 64px);
+  max-width: none;
+  padding: 14px 16px 16px;
+  box-sizing: border-box;
+}
+.workspace-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.workspace-nama-tombol {
+  font: inherit;
+  font-weight: 700;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.workspace-nama-tombol:hover {
+  background: var(--bg-3);
+}
+.workspace-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 10px;
+  min-height: 0;
+}
+.workspace-sidebar {
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.workspace-sidebar-kepala {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--garis);
+}
+.workspace-daftar-file {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  overflow: auto;
+  flex: 1;
+}
+.workspace-file-item {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+.workspace-file-item.aktif {
+  background: var(--aksen-lembut);
+}
+.workspace-file-nama {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 6px 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.workspace-file-aksi {
+  display: none;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.workspace-file-item:hover .workspace-file-aksi {
+  display: flex;
+}
+.workspace-editor-area {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.workspace-editor-area .tab-berkas {
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.workspace-split {
+  flex: 1;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  min-height: 0;
+}
+.workspace-split .lab-editor,
+.workspace-split .lab-terminal {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+.workspace-tab-tutup {
+  margin-left: 6px;
+  opacity: 0.6;
+}
+.workspace-tab-tutup:hover {
+  opacity: 1;
+}
+@media (max-width: 800px) {
+  .workspace-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  .workspace-sidebar {
+    max-height: 140px;
+  }
 }
 
 /* ---------- Markdown ---------- */

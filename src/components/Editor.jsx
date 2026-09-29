@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { java } from '@codemirror/lang-java';
+import { python } from '@codemirror/lang-python';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { keymap, EditorView } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
@@ -9,7 +10,7 @@ import { Prec } from '@codemirror/state';
 export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx, bahasa = 'javascript', readOnly, onView }) {
   const ekstensi = useMemo(
     () => [
-      bahasa === 'java' ? java() : javascript({ jsx }),
+      bahasa === 'java' ? java() : bahasa === 'python' ? python() : javascript({ jsx }),
       EditorView.lineWrapping,
       EditorView.editable.of(!readOnly),
       Prec.highest(

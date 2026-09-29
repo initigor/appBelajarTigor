@@ -121,9 +121,60 @@ Di layar sentuh, di atas editor muncul **baris simbol** (`( )`, `{ }`, `;`, `=>`
 > Progress disimpan per browser, jadi progress di laptop dan di iPad terpisah. Pindahkan dengan **Pengaturan → Ekspor/Impor progress**.
 > Selama `dev:hp` berjalan, website bisa dibuka siapa pun di Wi-Fi yang sama. Pakai di jaringan rumah, bukan Wi-Fi publik.
 
+## `/lab`: Uji Kelayakan Runtime Browser (WebAssembly, tanpa server)
+
+Sedang dieksplorasi: menjalankan **semua** bahasa (JS, Python, Java) langsung di browser lewat WebAssembly — tanpa server eksekusi kode — supaya situs bisa di-deploy sebagai frontend statis murni (Vercel Hobby gratis) dan dipakai dari perangkat mana pun termasuk iPad. Halaman `/lab` adalah purwarupa uji kelayakan: satu editor, satu terminal (xterm.js), tombol Jalankan per bahasa.
+
+**Status per 28 Sept 2026** (dites di lingkungan pengembangan; JDK 25 + Chromium modern dengan SharedArrayBuffer/Atomics penuh):
+
+| Bahasa | Runtime | Status |
+| --- | --- | --- |
+| JavaScript | Web Worker | ✅ Bekerja, termasuk `prompt()` interaktif (jembatan pesan async ke terminal) |
+| Python | [Pyodide](https://pyodide.org/) di Web Worker | ✅ Bekerja, termasuk `input()` interaktif sungguhan (SharedArrayBuffer + `Atomics.wait`, mengikuti [pola resmi Pyodide](https://pyodide.org/en/stable/usage/streams.html)) |
+| Java | [CheerpJ 4.3](https://cheerpj.com/) (JVM WebAssembly), kompilasi lewat `javac` yang berjalan di dalam CheerpJ sendiri (pola dari [leaningtech/javafiddle](https://github.com/leaningtech/javafiddle), pakai `tools.jar` OpenJDK di `public/java/tools.jar`) | ❌ **Tidak layak** — lihat kesimpulan di bawah |
+
+### Temuan uji Java/CheerpJ — KESIMPULAN: CheerpJ tidak dipakai untuk Java
+
+- `cheerpjInit()` selesai cepat (~50ms) dan berhasil.
+- **`cheerpjRunMain(...)` tidak pernah selesai** (menggantung tanpa pesan galat, tanpa aktivitas jaringan sama sekali) — dicoba: program trivial tanpa `main`, classpath tanpa `tools.jar` sama sekali, kontainer display yang benar, **kedua** mode COEP (`credentialless`/`require-corp`), dan versi CheerpJ 3.1 (API-nya beda, tidak cocok dengan pola javafiddle) — semua menggantung tanpa batas (diuji sampai ±4 menit).
+- **Dikonfirmasi ulang oleh pengguna di Safari iPad A16 sungguhan (lingkungan target sebenarnya): sama-sama menggantung tanpa akhir.** Jadi ini bukan sekadar keanehan lingkungan pengujian (Chromium yang disematkan di aplikasi desktop Claude) — reproducible di dua browser engine berbeda.
+- **Kemungkinan penyebab** (dari riset komunitas CheerpJ, bukan dugaan semata): CheerpJ menjalankan **seluruh** thread Java di atas **satu** thread JavaScript secara kooperatif (bukan preemptive seperti JVM sungguhan). Ada laporan pengguna lain dengan gejala serupa ("hangs after main is starting") yang disebabkan kode yang tidak pernah menyerahkan kendali (busy-wait/spin-loop) — `javac` adalah program besar dan kompleks yang kemungkinan memakai pola sinkronisasi yang tidak cocok dengan model ini.
+- **Tidak ditemukan API resmi CheerpJ untuk stdin/`Scanner` interaktif** sama sekali (tidak relevan lagi karena compile+run dasarnya sudah tidak jalan).
+
+**Keputusan:** jalur Java **tetap memakai runner lokal `javac`/`java` sungguhan** (lihat bagian "Course Java — PBO" di bawah, sudah terverifikasi bekerja sempurna) — artinya course Java **hanya bisa dipakai lewat `npm run dev` di komputer dengan JDK terpasang**, bukan lewat deploy Vercel/diakses dari iPad. Jalur JavaScript dan Python **tetap lanjut** memakai runtime WebAssembly di atas (keduanya sudah terbukti bekerja, termasuk di Safari iPad sungguhan untuk Python) untuk mencapai tujuan "bisa di-deploy & dipakai dari mana saja dengan biaya nol".
+
+### Temuan lain: regresi COOP/COEP yang sudah diperbaiki
+
+Memasang header `Cross-Origin-Opener-Policy`/`Cross-Origin-Embedder-Policy` (wajib untuk `SharedArrayBuffer`) sempat **mematahkan seluruh course JavaScript yang sudah ada** — Worker modul (`src/engine/jsWorker.js`) gagal dimuat (`ERR_BLOCKED_BY_RESPONSE`) karena jalur internal Vite untuk mentransformasi entry Worker (`?worker_file`) ternyata **tidak** menyertakan header yang diset lewat `server.headers`/`preview.headers`. Diperbaiki dengan memasang header itu lewat middleware sendiri (plugin `headerIsolasiSilangAsal()`, `enforce: 'pre'`) di [vite.config.js](vite.config.js) — sudah diverifikasi ulang: seluruh pelajaran JS **dan** DOM/React kembali berjalan normal.
+
+### Lisensi CheerpJ
+
+CheerpJ Community Edition **gratis untuk penggunaan personal/non-komersial saja** (dikonfirmasi dari banner konsol saat runtime dimuat: "FOR PERSONAL AND NON-BUSINESS USE ONLY"). `tools.jar` yang dipakai untuk kompilasi berasal dari OpenJDK (GPL v2 + Classpath Exception, dari proyek open-source `leaningtech/javafiddle`, MIT). Atribusi lengkap akan ditambahkan ke README dan halaman "Tentang" begitu jalur Java ini benar-benar dipakai.
+
+### Cara mencoba `/lab` secara lokal
+
+```bash
+npm run dev
+```
+
+Buka `http://localhost:5173/lab`. Chip "Cross-origin isolated" di kanan atas harus ✅ (kalau ⚠️, `input()` Python tidak akan interaktif).
+
+Tombol **Stop** menghentikan Worker secara paksa (`terminate()`) lalu membuat Worker baru untuk percobaan berikutnya — satu-satunya cara menghentikan infinite loop, karena kode di dalam Worker tidak bisa "diminta baik-baik" untuk berhenti.
+
+## Workspace: Ngoding Bebas (`/workspace`)
+
+IDE mini di browser, terpisah dari pelajaran — untuk JavaScript dan Python saja (Java sengaja tidak disertakan; lihat kesimpulan di atas). Dibangun di atas Worker yang sama dengan `/lab`.
+
+- **Project**: nama, bahasa (JavaScript/Python), kumpulan berkas (`{ path: isi }`), satu `entryPoint`. Disimpan di `localStorage` (`src/state/workspace.js`), autosave dengan debounce singkat setiap perubahan.
+- **File explorer** (sidebar kiri): buat/ganti-nama/hapus berkas, tandai berkas sebagai entry point (🎯). Nama berkas boleh memuat `/` untuk kesan folder (mis. `utils/helper.py`), tapi ini masih daftar datar, bukan pohon folder sungguhan.
+- **Tab**: setiap berkas yang dibuka dari sidebar muncul sebagai tab di atas editor; bisa ditutup satu per satu.
+- **Multi-berkas nyata untuk Python**: sebelum menjalankan, **semua** berkas project ditulis ke filesystem virtual Pyodide (`pyodide.FS.writeFile`) — jadi `import modul_lain` antar-berkas benar-benar bekerja, dites langsung dengan project 2 berkas (`main.py` mengimpor fungsi dari `helper.py`). Untuk JavaScript, MVP ini hanya menjalankan isi berkas **entry point** (belum ada resolusi `import`/`require` antar-berkas — itu strategi lanjutan kalau dibutuhkan, karena perlu resolver modul kustom di dalam Worker tanpa bundler).
+- **Unduh**: berkas aktif (Blob + `<a download>`, jalan di Safari iPad — bukan File System Access API yang tidak didukung Safari) dan seluruh project sebagai `.zip` (JSZip).
+- Belum ada di MVP ini (menyusul kalau dibutuhkan): upload/drag-drop berkas atau `.zip`, dukungan notebook `.ipynb`, folder sungguhan, sinkron ke akun/Supabase.
+
 ## Course Java — PBO
 
-Jalur belajar Java (Pemrograman Berorientasi Obyek) mengikuti materi Pekan 2 (Dasar Pemrograman Java) dan Pekan 3 (Kelas dan Objek) mata kuliah PBO — tapi **berdiri sendiri**, tidak bercampur dengan materi JavaScript.
+Jalur belajar Java (Pemrograman Berorientasi Obyek) mengikuti materi Pekan 2 (Dasar Pemrograman Java) dan Pekan 3 (Kelas dan Objek) mata kuliah PBO — tapi **berdiri sendiri**, tidak bercampur dengan materi JavaScript. (Course ini masih memakai runner server lokal `javac`/`java`, lihat di bawah — belum dipindahkan ke CheerpJ karena status uji kelayakan di atas.)
 
 ### Wajib: pasang JDK
 
