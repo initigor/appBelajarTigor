@@ -1,10 +1,11 @@
-// Halaman uji kelayakan: satu editor + satu terminal, Run untuk JavaScript, Python (Pyodide, input() interaktif),
-// dan Java (CheerpJ, kompilasi+jalan sungguhan di browser). Lihat README bagian "Uji Kelayakan /lab".
+// Uji kelayakan runtime browser: satu editor + satu terminal, Run/Stop untuk JavaScript (Worker) dan
+// Python (Pyodide, input() interaktif). Java TIDAK dipakai di sini -- lihat README bagian
+// "/lab: Uji Kelayakan Runtime Browser" utk kesimpulan (CheerpJ menggantung tanpa akhir, dikonfirmasi
+// juga di Safari iPad sungguhan). Materi Java tetap memakai course terpisah (runner javac/java lokal).
 import { useEffect, useRef, useState } from 'react';
 import Editor from '../components/Editor.jsx';
 import { useTerminal } from '../lab/useTerminal.js';
 import { bikinPembacaBaris, bikinSab, tulisBarisKeSab } from '../lab/stdinBridge.js';
-import { jalankanJavaDiBrowser } from '../lab/javaRunner.js';
 
 const CONTOH = {
   javascript: `console.log("Halo dari JavaScript!");
@@ -16,27 +17,7 @@ print(f"Salam, {nama}!")
 for i in range(3):
     print("Hitung:", i)
 `,
-  java: `import java.util.Scanner;
-
-class Helper {
-    static int kali(int a, int b) {
-        return a * b;
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        Scanner in = new Scanner(System.in);
-        System.out.print("Masukkan dua angka (pisah spasi): ");
-        int a = in.nextInt();
-        int b = in.nextInt();
-        System.out.println("Hasil kali (lewat kelas Helper): " + Helper.kali(a, b));
-    }
-}
-`,
 };
-
-const KELAS_UTAMA_JAVA = 'Main';
 
 export default function Lab() {
   const [bahasa, setBahasa] = useState('javascript');
@@ -44,30 +25,29 @@ export default function Lab() {
   const [jalan, setJalan] = useState(false);
   const [status, setStatus] = useState(null); // { pesan, persen }
   const [isolasi, setIsolasi] = useState(null); // crossOriginIsolated?
-  const [tungguInput, setTungguInput] = useState(false); // true = program sedang menunggu kamu mengetik di terminal
+  const [tungguInput, setTungguInput] = useState(false);
 
   const { elRef, termRef, tulis, tulisBaris, bersihkan } = useTerminal();
   const pembacaRef = useRef(null);
   const jsWorkerRef = useRef(null);
   const pyWorkerRef = useRef(null);
   const sabRef = useRef(null);
+  const dihentikanRef = useRef(false);
 
   useEffect(() => {
     setIsolasi(window.crossOriginIsolated ?? false);
   }, []);
 
-  const ambilJsWorker = () => {
-    if (!jsWorkerRef.current) jsWorkerRef.current = new Worker(new URL('../lab/jsWorkerLab.js', import.meta.url));
-    return jsWorkerRef.current;
+  const buatJsWorker = () => new Worker(new URL('../lab/jsWorkerLab.js', import.meta.url));
+  const buatPyWorker = () => {
+    const w = new Worker(new URL('../lab/pyWorker.js', import.meta.url));
+    sabRef.current = bikinSab();
+    if (sabRef.current) w.postMessage({ tipe: 'siapkan-stdin', sab: sabRef.current });
+    return w;
   };
-  const ambilPyWorker = () => {
-    if (!pyWorkerRef.current) {
-      pyWorkerRef.current = new Worker(new URL('../lab/pyWorker.js', import.meta.url));
-      sabRef.current = bikinSab();
-      if (sabRef.current) pyWorkerRef.current.postMessage({ tipe: 'siapkan-stdin', sab: sabRef.current });
-    }
-    return pyWorkerRef.current;
-  };
+
+  const ambilJsWorker = () => (jsWorkerRef.current ??= buatJsWorker());
+  const ambilPyWorker = () => (pyWorkerRef.current ??= buatPyWorker());
 
   const mintaBaris = async () => {
     if (!pembacaRef.current) pembacaRef.current = bikinPembacaBaris(termRef.current);
@@ -117,36 +97,39 @@ export default function Lab() {
       w.postMessage({ tipe: 'jalankan', kode: kode.python });
     });
 
-  const jalankanJava = async () => {
-    try {
-      const hasil = await jalankanJavaDiBrowser({
-        berkas: [{ nama: `${KELAS_UTAMA_JAVA}.java`, isi: kode.java }],
-        kelasUtama: KELAS_UTAMA_JAVA,
-        onStatus: (pesan, persen) => setStatus({ pesan, persen }),
-        onOutput: (teks) => tulis(teks.replace(/\n/g, '\r\n')),
-      });
-      if (!hasil.kompilasiOk) tulisBaris(`\x1b[31m[kompilasi gagal, kode keluar ${hasil.kodeKeluar}]\x1b[0m`);
-      else if (hasil.kodeKeluar !== 0) tulisBaris(`\x1b[33m[program keluar dengan kode ${hasil.kodeKeluar}]\x1b[0m`);
-    } catch (e) {
-      tulisBaris(`\x1b[31m[galat: ${e?.message ?? e}]\x1b[0m`);
-    } finally {
-      setStatus(null);
-    }
-  };
-
   const jalankan = async () => {
     if (jalan) return;
+    dihentikanRef.current = false;
     setJalan(true);
     setTungguInput(false);
     bersihkan();
     tulisBaris(`--- menjalankan ${bahasa} ---`);
     try {
       if (bahasa === 'javascript') await jalankanJs();
-      else if (bahasa === 'python') await jalankanPython();
-      else await jalankanJava();
+      else await jalankanPython();
     } finally {
       setJalan(false);
+      setStatus(null);
+      setTungguInput(false);
     }
+  };
+
+  /** Hentikan paksa: terminate worker (satu-satunya cara menghentikan kode yang macet/infinite loop),
+   * lalu buat worker baru untuk percobaan berikutnya — persis pola yang diminta. */
+  const hentikan = () => {
+    dihentikanRef.current = true;
+    if (bahasa === 'javascript') {
+      jsWorkerRef.current?.terminate();
+      jsWorkerRef.current = null;
+    } else {
+      pyWorkerRef.current?.terminate();
+      pyWorkerRef.current = null;
+      sabRef.current = null;
+    }
+    tulisBaris('\r\n\x1b[33m[dihentikan]\x1b[0m');
+    setJalan(false);
+    setStatus(null);
+    setTungguInput(false);
   };
 
   useEffect(
@@ -163,8 +146,8 @@ export default function Lab() {
         <div>
           <h1>🧪 Lab: Uji Kelayakan Runtime Browser</h1>
           <p className="teks-redup">
-            Satu editor, satu terminal. JavaScript (Worker), Python (Pyodide + <code>input()</code> interaktif), Java (CheerpJ — kompilasi &amp;
-            jalan sungguhan, tanpa server).
+            Satu editor, satu terminal. JavaScript (Worker) dan Python (Pyodide + <code>input()</code> interaktif) — keduanya jalan sungguhan di
+            browser, tanpa server. (Java tidak dipakai di sini — lihat README.)
           </p>
         </div>
         <span className={`chip ${isolasi ? 'chip-api' : 'chip-redup'}`} title="window.crossOriginIsolated">
@@ -174,15 +157,21 @@ export default function Lab() {
 
       <div className="lab-toolbar">
         <div className="lab-bahasa">
-          {['javascript', 'python', 'java'].map((b) => (
+          {['javascript', 'python'].map((b) => (
             <button key={b} className={`tab ${bahasa === b ? 'aktif' : ''}`} onClick={() => setBahasa(b)} disabled={jalan}>
-              {b === 'javascript' ? 'JavaScript' : b === 'python' ? 'Python' : 'Java'}
+              {b === 'javascript' ? 'JavaScript' : 'Python'}
             </button>
           ))}
         </div>
-        <button className="tombol tombol-jalan" onClick={jalankan} disabled={jalan}>
-          {jalan ? 'Menjalankan…' : '▶ Jalankan'}
-        </button>
+        {jalan ? (
+          <button className="tombol tombol-berhenti" onClick={hentikan}>
+            ⏹ Stop
+          </button>
+        ) : (
+          <button className="tombol tombol-jalan" onClick={jalankan}>
+            ▶ Jalankan
+          </button>
+        )}
       </div>
 
       {status && (
@@ -202,20 +191,14 @@ export default function Lab() {
 
       <div className="lab-split">
         <div className="lab-editor">
-          <Editor
-            nilai={kode[bahasa]}
-            onUbah={(v) => setKode((k) => ({ ...k, [bahasa]: v }))}
-            onJalankan={jalankan}
-            bahasa={bahasa}
-            gelap
-          />
+          <Editor nilai={kode[bahasa]} onUbah={(v) => setKode((k) => ({ ...k, [bahasa]: v }))} onJalankan={jalankan} bahasa={bahasa} gelap />
         </div>
         <div className={`lab-terminal ${tungguInput ? 'lab-terminal-tunggu' : ''}`} ref={elRef} />
       </div>
 
       <p className="teks-redup lab-catatan">
-        Ketik langsung di terminal saat program meminta input (Python <code>input()</code>, JS <code>prompt()</code>). Untuk Java: lihat catatan
-        stdin di README — belum ada API resmi CheerpJ untuk stdin interaktif, jadi hasilnya diamati apa adanya di sini.
+        Ketik langsung di terminal saat program meminta input (Python <code>input()</code>, JS <code>prompt()</code>). Tombol Stop mematikan
+        worker secara paksa (satu-satunya cara menghentikan infinite loop) dan membuat worker baru untuk percobaan berikutnya.
       </p>
     </main>
   );

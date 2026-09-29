@@ -26,6 +26,7 @@
     "@upstash/redis": "^1.39.0",
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
+    "jszip": "^3.10.2",
     "pyodide": "^0.28.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

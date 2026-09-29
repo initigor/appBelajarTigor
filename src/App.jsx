@@ -9,6 +9,8 @@ import Pengaturan from './pages/Pengaturan.jsx';
 import Install from './pages/Install.jsx';
 import Akun from './pages/Akun.jsx';
 import Lab from './pages/Lab.jsx';
+import WorkspaceDaftar from './pages/WorkspaceDaftar.jsx';
+import WorkspaceProyek from './pages/WorkspaceProyek.jsx';
 import { useAkun } from './state/akun.jsx';
 import { useInstall } from './state/install.js';
 import { panaskanWorker } from './engine/runner.js';
@@ -29,6 +31,10 @@ function Header() {
         <NavLink to="/" end aria-label="Beranda">
           <span className="nav-ikon-header">🏠</span>
           <span className="nav-teks">Beranda</span>
+        </NavLink>
+        <NavLink to="/workspace" aria-label="Workspace">
+          <span className="nav-ikon-header">🗂️</span>
+          <span className="nav-teks">Workspace</span>
         </NavLink>
         <NavLink to="/pengaturan" aria-label="Pengaturan">
           <span className="nav-ikon-header">⚙️</span>
@@ -108,6 +114,8 @@ export default function App() {
         <Route path="/install" element={<Install />} />
         <Route path="/akun" element={<Akun />} />
         <Route path="/lab" element={<Lab />} />
+        <Route path="/workspace" element={<WorkspaceDaftar />} />
+        <Route path="/workspace/:id" element={<WorkspaceProyek />} />
         <Route path="*" element={<TidakDitemukan />} />
       </Routes>
     </div>

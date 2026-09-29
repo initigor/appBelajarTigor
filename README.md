@@ -159,6 +159,19 @@ npm run dev
 
 Buka `http://localhost:5173/lab`. Chip "Cross-origin isolated" di kanan atas harus ✅ (kalau ⚠️, `input()` Python tidak akan interaktif).
 
+Tombol **Stop** menghentikan Worker secara paksa (`terminate()`) lalu membuat Worker baru untuk percobaan berikutnya — satu-satunya cara menghentikan infinite loop, karena kode di dalam Worker tidak bisa "diminta baik-baik" untuk berhenti.
+
+## Workspace: Ngoding Bebas (`/workspace`)
+
+IDE mini di browser, terpisah dari pelajaran — untuk JavaScript dan Python saja (Java sengaja tidak disertakan; lihat kesimpulan di atas). Dibangun di atas Worker yang sama dengan `/lab`.
+
+- **Project**: nama, bahasa (JavaScript/Python), kumpulan berkas (`{ path: isi }`), satu `entryPoint`. Disimpan di `localStorage` (`src/state/workspace.js`), autosave dengan debounce singkat setiap perubahan.
+- **File explorer** (sidebar kiri): buat/ganti-nama/hapus berkas, tandai berkas sebagai entry point (🎯). Nama berkas boleh memuat `/` untuk kesan folder (mis. `utils/helper.py`), tapi ini masih daftar datar, bukan pohon folder sungguhan.
+- **Tab**: setiap berkas yang dibuka dari sidebar muncul sebagai tab di atas editor; bisa ditutup satu per satu.
+- **Multi-berkas nyata untuk Python**: sebelum menjalankan, **semua** berkas project ditulis ke filesystem virtual Pyodide (`pyodide.FS.writeFile`) — jadi `import modul_lain` antar-berkas benar-benar bekerja, dites langsung dengan project 2 berkas (`main.py` mengimpor fungsi dari `helper.py`). Untuk JavaScript, MVP ini hanya menjalankan isi berkas **entry point** (belum ada resolusi `import`/`require` antar-berkas — itu strategi lanjutan kalau dibutuhkan, karena perlu resolver modul kustom di dalam Worker tanpa bundler).
+- **Unduh**: berkas aktif (Blob + `<a download>`, jalan di Safari iPad — bukan File System Access API yang tidak didukung Safari) dan seluruh project sebagai `.zip` (JSZip).
+- Belum ada di MVP ini (menyusul kalau dibutuhkan): upload/drag-drop berkas atau `.zip`, dukungan notebook `.ipynb`, folder sungguhan, sinkron ke akun/Supabase.
+
 ## Course Java — PBO
 
 Jalur belajar Java (Pemrograman Berorientasi Obyek) mengikuti materi Pekan 2 (Dasar Pemrograman Java) dan Pekan 3 (Kelas dan Objek) mata kuliah PBO — tapi **berdiri sendiri**, tidak bercampur dengan materi JavaScript. (Course ini masih memakai runner server lokal `javac`/`java`, lihat di bawah — belum dipindahkan ke CheerpJ karena status uji kelayakan di atas.)

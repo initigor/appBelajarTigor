@@ -60,7 +60,27 @@ onmessage = async (ev) => {
     try {
       const pyodide = await pastikanPyodideSiap();
       try {
-        await pyodide.runPythonAsync(ev.data.kode);
+        // Mode proyek (Workspace): tulis SEMUA berkas ke filesystem virtual Pyodide dulu,
+        // supaya `import modul_lain` antar-berkas benar-benar bekerja, baru jalankan entryPoint.
+        if (ev.data.berkas) {
+          for (const [path, isi] of Object.entries(ev.data.berkas)) {
+            const bagian = path.split('/');
+            let dir = '';
+            for (let i = 0; i < bagian.length - 1; i++) {
+              dir += (dir ? '/' : '') + bagian[i];
+              try {
+                pyodide.FS.mkdir(dir);
+              } catch {
+                /* sudah ada */
+              }
+            }
+            pyodide.FS.writeFile(path, isi);
+          }
+          const kodeUtama = ev.data.berkas[ev.data.entryPoint] ?? '';
+          await pyodide.runPythonAsync(kodeUtama);
+        } else {
+          await pyodide.runPythonAsync(ev.data.kode);
+        }
         kirim('selesai', { kode: 0 });
       } catch (e) {
         kirim('stderr', { teks: String(e?.message ?? e) + '\n' });
