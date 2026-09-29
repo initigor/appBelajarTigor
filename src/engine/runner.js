@@ -94,7 +94,7 @@ let rootLama = null;
 
 let modulDom = null;
 
-async function jalankanDiIframe({ kode, pelajaran, iframe, onLog }) {
+async function jalankanDiIframe({ kode, pelajaran, iframe, onLog, batasMs = 5000 }) {
   modulDom ??= import('./domEngine.js');
   if (rootLama) {
     try {
@@ -119,7 +119,7 @@ async function jalankanDiIframe({ kode, pelajaran, iframe, onLog }) {
 
   const { jalankanDom } = await modulDom;
   const batas = new Promise((resolve) =>
-    setTimeout(() => resolve({ error: 'Waktu habis', hasil: semuaGagal(pelajaran.tes, 'Tes tidak selesai dalam 5 detik.') }), 5000),
+    setTimeout(() => resolve({ error: 'Waktu habis', hasil: semuaGagal(pelajaran.tes, `Tes tidak selesai dalam ${batasMs / 1000} detik.`) }), batasMs),
   );
   return Promise.race([
     jalankanDom({
@@ -137,8 +137,12 @@ async function jalankanDiIframe({ kode, pelajaran, iframe, onLog }) {
   ]);
 }
 
-/** Jalankan kode + tes. onLog dipanggil untuk setiap baris console (streaming). */
-export function jalankanPelajaran({ kode, pelajaran, iframe, onLog }) {
+/**
+ * Jalankan kode + tes. onLog dipanggil untuk setiap baris console (streaming).
+ * batasMs (khusus DOM/React) = batas waktu keseluruhan; ujian memakai batas lebih longgar
+ * supaya jawaban yang benar tidak dinilai salah hanya karena browser sedang lambat.
+ */
+export function jalankanPelajaran({ kode, pelajaran, iframe, onLog, batasMs }) {
   if (pelajaran.tipe === 'js') return jalankanDiWorker({ kode, pelajaran, onLog });
-  return jalankanDiIframe({ kode, pelajaran, iframe, onLog });
+  return jalankanDiIframe({ kode, pelajaran, iframe, onLog, batasMs });
 }

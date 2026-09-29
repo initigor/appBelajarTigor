@@ -7,8 +7,9 @@
 // - percobaan : ambil yang terbesar
 // - kode      : ambil dari sisi yang lebih baru diubah; pelajaran yang hanya ada di satu sisi tetap dipakai
 // - streak    : ambil yang tanggal terakhirnya paling baru (jika sama, jumlah terbesar)
+// - ujian     : skor terbaik & percobaan diambil yang terbesar, lulus jika salah satu sudah lulus
 
-const kosong = () => ({ selesai: {}, kode: {}, percobaan: {}, streak: { jumlah: 0, terakhir: null }, diubah: 0, resetPada: 0 });
+const kosong = () => ({ selesai: {}, kode: {}, percobaan: {}, ujian: {}, streak: { jumlah: 0, terakhir: null }, diubah: 0, resetPada: 0 });
 
 function rapikan(p) {
   const k = kosong();
@@ -17,10 +18,34 @@ function rapikan(p) {
     selesai: p.selesai ?? k.selesai,
     kode: p.kode ?? k.kode,
     percobaan: p.percobaan ?? k.percobaan,
+    ujian: p.ujian ?? k.ujian,
     streak: p.streak ?? k.streak,
     diubah: p.diubah ?? 0,
     resetPada: p.resetPada ?? 0,
   };
+}
+
+function gabungUjian(x = {}, y = {}) {
+  const hasil = {};
+  for (const id of new Set([...Object.keys(x), ...Object.keys(y)])) {
+    const p = x[id];
+    const q = y[id];
+    if (!p || !q) {
+      hasil[id] = p ?? q;
+      continue;
+    }
+    const baru = (p.terakhir?.waktu ?? 0) >= (q.terakhir?.waktu ?? 0) ? p : q;
+    hasil[id] = {
+      terbaik: Math.max(p.terbaik ?? 0, q.terbaik ?? 0),
+      lulus: Boolean(p.lulus || q.lulus),
+      tanggalLulus: [p.tanggalLulus, q.tanggalLulus].filter(Boolean).sort()[0] ?? null,
+      percobaan: Math.max(p.percobaan ?? 0, q.percobaan ?? 0),
+      xp: Math.max(p.xp || 0, q.xp || 0),
+      terakhir: baru.terakhir,
+      soalTerakhir: baru.soalTerakhir,
+    };
+  }
+  return hasil;
 }
 
 export function gabungProgress(lokalMentah, cloudMentah) {
@@ -53,11 +78,13 @@ export function gabungProgress(lokalMentah, cloudMentah) {
   else if (sa.terakhir !== sb.terakhir) streak = sa.terakhir > sb.terakhir ? sa : sb;
   else streak = sa.jumlah >= sb.jumlah ? sa : sb;
 
-  return { selesai, kode, percobaan, streak, diubah: Math.max(a.diubah, b.diubah), resetPada };
+  const ujian = gabungUjian(a.ujian, b.ujian);
+
+  return { selesai, kode, percobaan, ujian, streak, diubah: Math.max(a.diubah, b.diubah), resetPada };
 }
 
 /** Bagian progress yang dikirim ke cloud (tema tetap per perangkat). */
 export function bagianCloud(p) {
-  const { selesai, kode, percobaan, streak, diubah, resetPada } = rapikan(p);
-  return { selesai, kode, percobaan, streak, diubah, resetPada };
+  const { selesai, kode, percobaan, ujian, streak, diubah, resetPada } = rapikan(p);
+  return { selesai, kode, percobaan, ujian, streak, diubah, resetPada };
 }

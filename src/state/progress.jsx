@@ -7,6 +7,7 @@ const awal = () => ({
   selesai: {}, // { [id]: { tanggal: 'YYYY-MM-DD', xp: number } }
   kode: {}, // { [id]: string } kode terakhir di editor
   percobaan: {}, // { [id]: number } berapa kali "Jalankan" ditekan
+  ujian: {}, // { [idUjian]: { terbaik, lulus, tanggalLulus, percobaan, xp, terakhir, soalTerakhir } }
   streak: { jumlah: 0, terakhir: null },
   tema: 'sistem', // 'sistem' | 'terang' | 'gelap'
   diubah: 0, // timestamp perubahan terakhir (untuk sinkron antar-perangkat)
@@ -99,6 +100,34 @@ export function ProgressProvider({ children }) {
       };
     });
   }, [ubah]);
+  /**
+   * Simpan hasil satu percobaan ujian. XP bonus ujian hanya diberikan sekali, saat pertama kali lulus.
+   * hasil = { persen, lulus, perChapter, soalIds } (dari hitungHasil di src/ujian/susun.js)
+   */
+  const terapkanHasilUjian = useCallback(
+    (ujian, hasil) => {
+      const hariIni = tanggalLokal();
+      ubah((d) => {
+        const lama = d.ujian?.[ujian.id] ?? {};
+        return {
+          ...d,
+          ujian: {
+            ...d.ujian,
+            [ujian.id]: {
+              terbaik: Math.max(lama.terbaik ?? 0, hasil.persen),
+              lulus: Boolean(lama.lulus) || hasil.lulus,
+              tanggalLulus: lama.tanggalLulus ?? (hasil.lulus ? hariIni : null),
+              percobaan: (lama.percobaan ?? 0) + 1,
+              xp: lama.xp || (hasil.lulus ? ujian.xp : 0),
+              terakhir: { persen: hasil.persen, waktu: Date.now(), tanggal: hariIni, perChapter: hasil.perChapter },
+              soalTerakhir: hasil.soalIds,
+            },
+          },
+        };
+      });
+    },
+    [ubah],
+  );
   const setTema = useCallback((tema) => setData((d) => ({ ...d, tema })), []);
   const resetProgress = useCallback(() => {
     const kini = Date.now();
@@ -113,7 +142,8 @@ export function ProgressProvider({ children }) {
     const hariIni = tanggalLokal();
     const streakAktif =
       data.streak.terakhir && selisihHari(data.streak.terakhir, hariIni) <= 1 ? data.streak.jumlah : 0;
-    const totalXp = Object.values(data.selesai).reduce((a, s) => a + (s.xp ?? 0), 0);
+    const xpUjian = Object.values(data.ujian ?? {}).reduce((a, u) => a + (u.xp || 0), 0);
+    const totalXp = Object.values(data.selesai).reduce((a, s) => a + (s.xp ?? 0), 0) + xpUjian;
     const berikutnya = semuaPelajaran.find((p) => !data.selesai[p.id]) ?? null;
     return {
       data,
@@ -128,12 +158,13 @@ export function ProgressProvider({ children }) {
       hapusKode,
       tambahPercobaan,
       tandaiSelesai,
+      terapkanHasilUjian,
       setTema,
       resetProgress,
       imporData,
       terapkanSinkron,
     };
-  }, [data, temaAktif, simpanKode, hapusKode, tambahPercobaan, tandaiSelesai, setTema, resetProgress, imporData, terapkanSinkron]);
+  }, [data, temaAktif, simpanKode, hapusKode, tambahPercobaan, tandaiSelesai, terapkanHasilUjian, setTema, resetProgress, imporData, terapkanSinkron]);
 
   return <Ctx.Provider value={nilai}>{children}</Ctx.Provider>;
 }
