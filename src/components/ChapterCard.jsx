@@ -28,7 +28,7 @@ export default function ChapterCard({ chapter, buka, onToggle, basePath, isSeles
         </span>
       </button>
       <ProgressBar nilai={n ? selesai / n : 0} />
-      <div className={`chapter-isi ${buka ? 'terbuka' : ''}`}>
+      <div className={`chapter-isi ${buka ? 'terbuka' : ''}`} inert={!buka}>
         <div className="chapter-isi-dalam">
           {renderIsi ? (
             renderIsi()

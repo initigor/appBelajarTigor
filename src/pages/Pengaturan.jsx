@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProgress } from '../state/progress.jsx';
 import { semuaPelajaran } from '../lessons/index.js';
+import { daftarUjian } from '../ujian/index.js';
 
 const PILIHAN_TEMA = [
   { id: 'sistem', label: '🖥️ Ikuti sistem' },
@@ -81,6 +82,9 @@ export default function Pengaturan() {
         <ul className="ringkasan">
           <li>
             Pelajaran selesai: <b>{prog.jumlahSelesai}</b> dari {semuaPelajaran.length}
+          </li>
+          <li>
+            Ujian lulus: <b>{daftarUjian.filter((u) => prog.data.ujian?.[u.id]?.lulus).length}</b> dari {daftarUjian.length}
           </li>
           <li>
             Total XP: <b>{prog.totalXp}</b>

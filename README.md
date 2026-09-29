@@ -227,6 +227,56 @@ Tiap pekan (Pekan 2 **dan** Pekan 3) punya dua jalur saat pertama kali dibuka: *
 2. Soal bank: tambahkan ke object `bankPekan2`/`bankPekan3` di `src/lessonsJava/_bersama/`, dengan `id` unik dan `lessonId` yang cocok — minimal 4 soal per pelajaran.
 3. Jalankan `npm run check-lessons-java -- <sebagian-id>` untuk memverifikasi solusinya benar-benar lolos lewat JDK.
 
+## Ujian pemahaman (JavaScript → React)
+
+Setelah beberapa chapter, ada **ujian** untuk menguji apakah materinya benar-benar dipahami, bukan hanya pelajarannya "sudah dicentang". Kartu ujian muncul di Beranda tepat setelah chapter terakhir yang diujikan:
+
+| Ujian | Chapter | Soal | Bonus XP |
+| --- | --- | --- | --- |
+| Ujian 1: Dasar JavaScript | 1–3 | 13 | +100 |
+| Ujian 2: Array, Object & JS Modern | 4–6 | 13 | +120 |
+| Ujian 3: DOM, Event & Async | 7–8 | 12 | +120 |
+| Ujian 4: React | 9–11 | 12 | +150 |
+| Ujian 5: Backend Node.js & API | 13 | 13 | +150 |
+
+- **Tiga jenis soal**, dengan bobot berbeda: pilihan ganda (1 poin), prediksi output (2 poin), dan menulis kode (3 poin). Soal kode dinilai dengan tes tersembunyi yang sama seperti latihan (JS di Web Worker, DOM/React di iframe).
+- **Lulus** jika skor ≥ 70%. Bonus XP hanya diberikan sekali, saat pertama kali lulus. Skor terbaik, jumlah percobaan, dan status lulus tersimpan di progress (ikut tersinkron ke cloud jika kamu punya akun).
+- **Soal diacak**: tiap percobaan mengambil soal dari bank yang lebih besar, tersebar merata antar-chapter, dan soal yang baru keluar di percobaan sebelumnya dihindari. Urutan pilihan jawaban juga diacak.
+- **Tidak ada hasil tes selama ujian.** Kunci jawaban, pembahasan, dan tautan "pelajari lagi" muncul setelah selesai.
+- **Tersimpan otomatis**: jawaban disimpan di perangkat, jadi ujian bisa dilanjutkan kalau tab tertutup atau halaman dimuat ulang.
+- Ujian **tidak mengunci** apa pun; boleh dicoba kapan saja (ada peringatan jika pelajarannya belum selesai).
+
+### Cara menambah atau mengubah ujian
+
+Satu file per ujian di `src/ujian/ujian-*.js` (urutan mengikuti nama file). Kerangkanya:
+
+~~~js
+import { baris, kode, output, pg, pgk } from './_bersama/buat.js';
+
+export default {
+  id: 'ujian-6-contoh',           // unik
+  judul: 'Ujian 6: Contoh',
+  ikon: '📝',
+  deskripsi: 'Ringkasan materi yang diujikan.',
+  chapterIds: [4, 5],             // chapter yang diujikan
+  setelahChapter: 5,              // kartu ujian ditampilkan setelah chapter ini di Beranda
+  lulus: 70,                      // persen kelulusan
+  xp: 100,                        // bonus XP saat pertama kali lulus
+  komposisi: { 'pilihan-ganda': 8, 'prediksi-output': 3, kode: 2 },   // jumlah soal per percobaan
+  soal: [
+    // pilihan ganda: id, chapterId, pertanyaan (Markdown), pilihan[], indeksBenar, pembahasan, idPelajaran
+    pg('u6-01', 4, 'Apa hasil `[1, 2].length`?', ['1', '2', '3'], 1, 'Panjang array adalah jumlah elemennya.', 'array-dasar'),
+    // pgk = sama, tetapi pilihan berupa kode/nilai (ditampilkan monospace)
+    // prediksi output: kode dijalankan, `kunci` = isi console persis
+    output('u6-o1', 4, 'console.log([1, 2].length);', '2', 'Pembahasan...', 'array-dasar'),
+    // menulis kode: sama seperti tes di pelajaran biasa (ctx.panggil, ctx.klik, dst.)
+    kode('u6-k1', 4, { jenis: 'js', tugas: '...', kodeAwal: '...', solusi: '...', tes: [/* { nama, cek(ctx) } */], penjelasan: '...' }),
+  ],
+};
+~~~
+
+Aturan penting: **id soal harus unik di semua ujian**, `chapterId` harus termasuk `chapterIds`, dan kolom `pelajaran` (opsional) harus pelajaran yang benar-benar ada di chapter itu. Semua itu, plus kebenaran kunci, diperiksa oleh `npm run check-ujian`.
+
 ## Struktur folder
 
 ```
@@ -362,10 +412,11 @@ Helper untuk pesan tes bisa di-import dari `src/engine/tes.js`: `gagal(pesan)`, 
 
 ## `npm run check-lessons`
 
-Menjalankan **kedua** checker berurutan:
+Menjalankan **ketiga** checker berurutan:
 
 1. `scripts/check-lessons.js` — tiap pelajaran JS di Node (DOM/React memakai jsdom), memastikan **solusi** lolos semua tesnya sendiri dan **kodeAwal** belum lolos semua tes (supaya tidak ada latihan "gratis").
 2. `scripts/check-lessons-java.js` — tiap pelajaran Java lewat JDK sungguhan (butuh `javac`/`java` di `PATH`; kalau tidak ada, langkah ini dilewati dengan pesan jelas), dengan pemeriksaan yang disesuaikan per `subtipe` (lihat bagian Course Java — PBO).
+3. `scripts/check-ujian.js` — semua bank soal ujian: struktur & id valid, **kunci "prediksi output" harus sama dengan output sebenarnya**, **solusi soal kode lolos tesnya** sementara kode awalnya tidak, dan pemilihan soal acak menghasilkan komposisi yang tepat.
 
 ```bash
 npm run check-lessons
@@ -374,6 +425,8 @@ npm run check-lessons
 ```bash
 npm run check-lessons -- react       # filter pelajaran JS
 npm run check-lessons-java -- array  # filter pelajaran Java saja
+npm run check-ujian                  # bank soal ujian saja
+npm run check-ujian -- ujian-4       # satu ujian saja
 ```
 
 ## Cara kerja singkat

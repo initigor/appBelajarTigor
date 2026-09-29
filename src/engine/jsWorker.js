@@ -2,6 +2,7 @@
 import { jalankanJs } from './jsEngine.js';
 import { formatError } from './tes.js';
 import { pelajaranById } from '../lessons/index.js';
+import { soalKodeById } from '../ujian/index.js';
 
 let runAktif = null;
 
@@ -20,7 +21,8 @@ self.onmessage = async ({ data }) => {
   }
   const { runId, kode, pelajaranId } = data;
   runAktif = runId;
-  const pelajaran = pelajaranById[pelajaranId];
+  // Soal kode di ujian dijalankan lewat engine yang sama dengan pelajaran biasa.
+  const pelajaran = pelajaranById[pelajaranId] ?? soalKodeById[pelajaranId];
   const hasil = await jalankanJs({
     kode,
     pelajaran,
