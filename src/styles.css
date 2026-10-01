@@ -331,10 +331,13 @@ a {
 
 .peta {
   display: grid;
+  /* minmax(0, 1fr): kolom boleh menyusut, kalau tidak isi chapter melebar melewati kotak materi dan terpotong */
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   position: relative;
 }
 .chapter {
+  min-width: 0;
   background: var(--bg-2);
   border: 1px solid var(--garis);
   border-radius: 18px;
@@ -447,7 +450,7 @@ a {
   padding: 0;
   margin: 14px 0 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
   gap: 8px;
 }
 .item-pelajaran {
@@ -492,9 +495,13 @@ a {
 }
 .item-judul {
   flex: 1;
+  min-width: 0;
   font-size: 0.92rem;
+  overflow-wrap: anywhere;
 }
 .item-xp {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 0.75rem;
   color: var(--teks-2);
 }
@@ -2048,9 +2055,11 @@ a {
 /* ---------- Materi (container level atas di Beranda) ---------- */
 .daftar-materi {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 }
 .materi {
+  min-width: 0;
   background: var(--bg-2);
   border: 2px solid var(--garis);
   border-radius: 22px;
