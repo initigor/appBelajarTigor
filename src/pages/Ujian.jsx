@@ -15,6 +15,7 @@ import {
 } from '../ujian/susun.js';
 import { htmlPreview, jalankanPelajaran } from '../engine/runner.js';
 import { useProgress } from '../state/progress.jsx';
+import { daftarRiwayat, simpanPercobaan } from '../state/riwayatUjian.js';
 import { layarSentuh } from '../hooks/useModeLayar.js';
 import Editor from '../components/Editor.jsx';
 import BarSimbol from '../components/BarSimbol.jsx';
@@ -64,6 +65,10 @@ function hapusDraf(ujian) {
 function labelChapter(cid) {
   const c = daftarChapter.find((x) => x.id === cid);
   return c ? `Chapter ${cid}: ${c.judul}` : `Chapter ${cid}`;
+}
+
+export function formatWaktu(ms) {
+  return new Date(ms).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
 }
 
 function bahasaKode(soal) {
@@ -180,8 +185,10 @@ function IsiUjian({ ujian }) {
     const ringkasan = hitungHasil(ujian, daftarSoal, benar);
     const pertamaLulus = ringkasan.lulus && !dataUjian?.lulus;
     prog.terapkanHasilUjian(ujian, { ...ringkasan, soalIds: daftarSoal.map((s) => s.id) });
+    // Simpan jawaban + hasil per soal supaya bisa ditinjau lagi kapan saja lewat Riwayat Ujian.
+    const idRiwayat = simpanPercobaan({ ujianId: ujian.id, ringkasan, daftarSoal, benar, urutan, jawaban, pesan });
     hapusDraf(ujian);
-    setHasil({ ringkasan, benar, pesan, pertamaLulus, daftarSoal, urutan, jawaban });
+    setHasil({ ringkasan, benar, pesan, pertamaLulus, daftarSoal, urutan, jawaban, idRiwayat });
     setFase('hasil');
   };
 
@@ -228,6 +235,7 @@ function Intro({ ujian, dataUjian, prog, onMulai }) {
   const semuaPelajaran = chapters.flatMap((c) => c.pelajaran);
   const selesai = semuaPelajaran.filter((p) => prog.isSelesai(p.id)).length;
   const belumPertama = semuaPelajaran.find((p) => !prog.isSelesai(p.id));
+  const jumlahRiwayat = daftarRiwayat(ujian.id).length;
 
   return (
     <main className="halaman ujian-halaman">
@@ -239,6 +247,12 @@ function Intro({ ujian, dataUjian, prog, onMulai }) {
         <div className={`riwayat-ujian ${dataUjian.lulus ? 'lulus' : ''}`}>
           {dataUjian.lulus ? '✅ Sudah lulus' : '🔁 Belum lulus'} · skor terbaik <b>{dataUjian.terbaik}%</b> · {dataUjian.percobaan}× percobaan
           {dataUjian.tanggalLulus && <span className="teks-redup"> · lulus {dataUjian.tanggalLulus}</span>}
+          {jumlahRiwayat > 0 && (
+            <>
+              {' '}
+              · <Link to={`/riwayat?ujian=${ujian.id}`}>📜 Lihat riwayat & tinjau kesalahan ({jumlahRiwayat})</Link>
+            </>
+          )}
         </div>
       )}
 
@@ -490,18 +504,38 @@ function SoalKode({ soal, kode, setKode, gelap }) {
 
 // ---------- Hasil ----------
 
-function HasilUjian({ ujian, hasil, onUlangi }) {
-  const { ringkasan, benar, pesan, pertamaLulus, daftarSoal, urutan, jawaban } = hasil;
+export function HasilUjian({ ujian, hasil, onUlangi, riwayatWaktu, jumlahHilang = 0 }) {
+  const { ringkasan, benar, pesan, pertamaLulus, daftarSoal, urutan, jawaban, idRiwayat } = hasil;
   const { persen, poin, maks, lulus, perChapter } = ringkasan;
+  const modeRiwayat = Boolean(riwayatWaktu);
 
   const salah = daftarSoal.filter((s) => !benar[s.id]);
+  const [tampil, setTampil] = useState(salah.length > 0 ? 'salah' : 'semua');
+  const daftarTinjau = tampil === 'salah' ? salah : daftarSoal;
   const topikUlang = [...new Set(salah.map((s) => s.pelajaran).filter(Boolean))].map((id) => pelajaranById[id]).filter(Boolean);
   const judul = lulus ? '🎉 Selamat, kamu lulus!' : persen >= ujian.lulus - 20 ? '💪 Sedikit lagi!' : '📚 Belum lulus, yuk ulangi materinya';
 
   return (
     <main className="halaman ujian-halaman">
-      {lulus && <Confetti />}
-      <h1>{judul}</h1>
+      {lulus && !modeRiwayat && <Confetti />}
+      {modeRiwayat ? (
+        <>
+          <p className="hero-kecil">
+            {ujian.ikon} {ujian.judul}
+          </p>
+          <h1>📜 Tinjauan percobaan</h1>
+          <p className="teks-redup">{formatWaktu(riwayatWaktu)}</p>
+        </>
+      ) : (
+        <>
+          <h1>{judul}</h1>
+          {idRiwayat && (
+            <p className="teks-redup">
+              📜 Percobaan ini tersimpan di <Link to={`/riwayat/${idRiwayat}`}>Riwayat Ujian</Link>, jadi pembahasannya bisa dibuka lagi kapan saja.
+            </p>
+          )}
+        </>
+      )}
 
       <section className={`kartu-skor ${lulus ? 'lulus' : 'belum'}`}>
         <div className="skor-besar">{persen}%</div>
@@ -512,7 +546,9 @@ function HasilUjian({ ujian, hasil, onUlangi }) {
             </b>{' '}
             · {daftarSoal.length - salah.length}/{daftarSoal.length} soal benar
           </div>
-          <div className="teks-redup">Batas lulus {ujian.lulus}%</div>
+          <div className="teks-redup">
+            Batas lulus {ujian.lulus}%{modeRiwayat && (lulus ? ' · lulus' : ' · belum lulus')}
+          </div>
           <div className="bar-skor" aria-hidden="true">
             <div className="bar-skor-isi" style={{ width: `${persen}%` }} />
             <div className="bar-skor-batas" style={{ left: `${ujian.lulus}%` }} />
@@ -561,45 +597,57 @@ function HasilUjian({ ujian, hasil, onUlangi }) {
         </section>
       )}
 
-      {salah.length > 0 && (
-        <section className="tinjauan-soal">
-          <h2>Pembahasan soal yang keliru ({salah.length})</h2>
-          {salah.map((s) => (
-            <Tinjauan key={s.id} soal={s} nomor={daftarSoal.indexOf(s) + 1} urutan={urutan[s.id]} jawaban={jawaban[s.id]} pesan={pesan[s.id]} />
-          ))}
-        </section>
-      )}
-
-      {salah.length < daftarSoal.length && (
-        <details className="kartu-setelan soal-benar">
-          <summary>✅ Soal yang sudah benar ({daftarSoal.length - salah.length})</summary>
-          <ul>
-            {daftarSoal
-              .filter((s) => benar[s.id])
-              .map((s) => (
-                <li key={s.id}>
-                  <b>Soal {daftarSoal.indexOf(s) + 1}</b> · {LABEL_TIPE[s.tipe]}: {s.penjelasan.split('\n')[0]}
-                </li>
-              ))}
-          </ul>
-        </details>
-      )}
+      <section className="tinjauan-soal">
+        <div className="tinjauan-kepala">
+          <h2>Pembahasan soal</h2>
+          <div className="filter-tinjauan" role="tablist" aria-label="Soal yang ditampilkan">
+            <button role="tab" aria-selected={tampil === 'salah'} className={tampil === 'salah' ? 'aktif' : ''} onClick={() => setTampil('salah')}>
+              ❌ Keliru ({salah.length})
+            </button>
+            <button role="tab" aria-selected={tampil === 'semua'} className={tampil === 'semua' ? 'aktif' : ''} onClick={() => setTampil('semua')}>
+              📋 Semua ({daftarSoal.length})
+            </button>
+          </div>
+        </div>
+        {jumlahHilang > 0 && (
+          <p className="pemberitahuan-ujian">
+            ℹ️ {jumlahHilang} soal dari percobaan ini sudah tidak ada di bank soal (bank soal diperbarui), jadi tidak bisa ditampilkan.
+          </p>
+        )}
+        {daftarTinjau.length === 0 && <p className="teks-redup">🎉 Semua jawabanmu benar di percobaan ini. Pilih “Semua” untuk melihat pembahasannya.</p>}
+        {daftarTinjau.map((s) => (
+          <Tinjauan key={s.id} soal={s} benar={Boolean(benar[s.id])} nomor={daftarSoal.indexOf(s) + 1} urutan={urutan[s.id]} jawaban={jawaban[s.id]} pesan={pesan[s.id]} />
+        ))}
+      </section>
 
       <div className="baris-tombol">
-        <button className="tombol tombol-besar" onClick={onUlangi}>
-          🔁 {lulus ? 'Coba lagi untuk skor lebih tinggi' : 'Ulangi ujian (soal baru)'}
-        </button>
-        <Link className="tombol tombol-kedua tombol-besar" to="/">
-          Ke beranda →
-        </Link>
+        {modeRiwayat ? (
+          <>
+            <Link className="tombol tombol-besar" to={`/ujian/${ujian.id}`}>
+              🔁 Mulai percobaan baru
+            </Link>
+            <Link className="tombol tombol-kedua tombol-besar" to={`/riwayat?ujian=${ujian.id}`}>
+              ← Semua riwayat
+            </Link>
+          </>
+        ) : (
+          <>
+            <button className="tombol tombol-besar" onClick={onUlangi}>
+              🔁 {lulus ? 'Coba lagi untuk skor lebih tinggi' : 'Ulangi ujian (soal baru)'}
+            </button>
+            <Link className="tombol tombol-kedua tombol-besar" to="/">
+              Ke beranda →
+            </Link>
+          </>
+        )}
       </div>
     </main>
   );
 }
 
-function Tinjauan({ soal, nomor, urutan, jawaban, pesan }) {
+function Tinjauan({ soal, benar, nomor, urutan, jawaban, pesan }) {
   return (
-    <article className="tinjauan-item">
+    <article className={`tinjauan-item ${benar ? 'benar' : ''}`}>
       <div className="kepala-soal">
         <span className="chip">
           Soal {nomor} · {LABEL_TIPE[soal.tipe]}
@@ -610,31 +658,43 @@ function Tinjauan({ soal, nomor, urutan, jawaban, pesan }) {
       {soal.tipe === 'pilihan-ganda' && (
         <>
           <Markdown>{soal.pertanyaan}</Markdown>
-          <p className="jawaban-salah">
-            ❌ Jawabanmu:{' '}
+          <p className={benar ? 'jawaban-benar' : 'jawaban-salah'}>
+            {benar ? '✅' : '❌'} Jawabanmu:{' '}
             {typeof jawaban === 'number' ? <code>{soal.pilihan[urutan[jawaban]]}</code> : <i>tidak dijawab</i>}
           </p>
-          <p className="jawaban-benar">
-            ✅ Jawaban benar: <code>{teksJawabanBenar(soal)}</code>
-          </p>
+          {!benar && (
+            <p className="jawaban-benar">
+              ✅ Jawaban benar: <code>{teksJawabanBenar(soal)}</code>
+            </p>
+          )}
         </>
       )}
 
       {soal.tipe === 'prediksi-output' && (
         <>
           <BlokKode kode={soal.kode} />
-          <p className="jawaban-salah">❌ Jawabanmu:</p>
+          <p className={benar ? 'jawaban-benar' : 'jawaban-salah'}>{benar ? '✅' : '❌'} Jawabanmu:</p>
           <pre className="blok-jawaban">{jawaban?.trim() ? jawaban : '(tidak dijawab)'}</pre>
-          <p className="jawaban-benar">✅ Output yang benar:</p>
-          <pre className="blok-jawaban">{soal.kunci}</pre>
+          {!benar && (
+            <>
+              <p className="jawaban-benar">✅ Output yang benar:</p>
+              <pre className="blok-jawaban">{soal.kunci}</pre>
+            </>
+          )}
         </>
       )}
 
       {soal.tipe === 'kode' && (
         <>
           <Markdown>{soal.tugas}</Markdown>
-          <p className="jawaban-salah">❌ Kodemu belum lolos tes{pesan ? ':' : '.'}</p>
-          {pesan && <pre className="blok-jawaban">{pesan}</pre>}
+          {benar ? (
+            <p className="jawaban-benar">✅ Kodemu lolos semua tes.</p>
+          ) : (
+            <>
+              <p className="jawaban-salah">❌ Kodemu belum lolos tes{pesan ? ':' : '.'}</p>
+              {pesan && <pre className="blok-jawaban">{pesan}</pre>}
+            </>
+          )}
           <details>
             <summary>Lihat kodemu</summary>
             <BlokKode kode={jawaban ?? soal.kodeAwal} bahasa={bahasaKode(soal)} />

@@ -14,7 +14,7 @@ export function labelRentang(ids) {
  * Kartu ujian di Beranda, ditempatkan setelah chapter terakhir yang diujikan.
  * `status` = data hasil ujian dari progress ({ terbaik, lulus, percobaan, ... }) atau undefined.
  */
-export default function UjianCard({ ujian, status, isSelesai }) {
+export default function UjianCard({ ujian, status, isSelesai, jumlahRiwayat = 0 }) {
   const pelajaran = ujian.chapterIds.flatMap((id) => daftarChapter.find((c) => c.id === id)?.pelajaran ?? []);
   const selesai = pelajaran.filter((p) => isSelesai(p.id)).length;
   const siap = pelajaran.length > 0 && selesai === pelajaran.length;
@@ -37,7 +37,14 @@ export default function UjianCard({ ujian, status, isSelesai }) {
         <p className="chapter-deskripsi">
           {komp.soal} soal · lulus ≥ {ujian.lulus}% · bonus +{ujian.xp} XP
         </p>
-        <div className="ujian-status">{chip}</div>
+        <div className="ujian-status">
+          {chip}
+          {jumlahRiwayat > 0 && (
+            <Link className="chip chip-tautan" to={`/riwayat?ujian=${ujian.id}`}>
+              📜 Riwayat ({jumlahRiwayat})
+            </Link>
+          )}
+        </div>
       </div>
       <Link className={`tombol ${status?.lulus ? 'tombol-kedua' : ''}`} to={`/ujian/${ujian.id}`}>
         {teksTombol} →
