@@ -4,6 +4,8 @@ import JSZip from 'jszip';
 import { ambilProject, simpanProject, namaFileTersedia } from '../state/workspace.js';
 import { useProgress } from '../state/progress.jsx';
 import Editor from '../components/Editor.jsx';
+import BarSimbol from '../components/BarSimbol.jsx';
+import { layarSentuh } from '../hooks/useModeLayar.js';
 import { useTerminal } from '../lab/useTerminal.js';
 import { bikinPembacaBaris, bikinSab, tulisBarisKeSab } from '../lab/stdinBridge.js';
 
@@ -46,6 +48,10 @@ function IsiWorkspace({ projectAwal, gelap }) {
   const [jalan, setJalan] = useState(false);
   const [status, setStatus] = useState(null);
   const [tungguInput, setTungguInput] = useState(false);
+  // Khusus layar sempit: daftar berkas bisa dilipat (terminal tetap di bawah editor, seperti di desktop).
+  const [sidebarBuka, setSidebarBuka] = useState(false);
+  const menuUnduhRef = useRef(null);
+  const editorViewRef = useRef(null);
 
   const { elRef, termRef, tulis, tulisBaris, bersihkan } = useTerminal();
   const pembacaRef = useRef(null);
@@ -74,6 +80,7 @@ function IsiWorkspace({ projectAwal, gelap }) {
   const ubahIsiFile = (path, isi) => setProject((p) => ({ ...p, files: { ...p.files, [path]: isi } }));
 
   const bukaFile = (path) => {
+    setSidebarBuka(false);
     setAktif(path);
     setTabTerbuka((t) => (t.includes(path) ? t : [...t, path]));
   };
@@ -209,8 +216,13 @@ function IsiWorkspace({ projectAwal, gelap }) {
     setTungguInput(false);
   };
 
-  const unduhFileAktif = () => unduhBlob(aktif.split('/').pop(), project.files[aktif] ?? '');
+  const tutupMenuUnduh = () => menuUnduhRef.current?.removeAttribute('open');
+  const unduhFileAktif = () => {
+    tutupMenuUnduh();
+    unduhBlob(aktif.split('/').pop(), project.files[aktif] ?? '');
+  };
   const unduhZip = async () => {
+    tutupMenuUnduh();
     const zip = new JSZip();
     for (const [path, isi] of Object.entries(project.files)) zip.file(path, isi);
     const blob = await zip.generateAsync({ type: 'blob' });
@@ -225,32 +237,42 @@ function IsiWorkspace({ projectAwal, gelap }) {
   };
 
   return (
-    <main className="halaman workspace-halaman">
+    <main className="halaman workspace-halaman" data-sidebar={sidebarBuka ? 'buka' : 'tutup'}>
       <div className="workspace-topbar">
-        <Link to="/workspace" className="link-kecil">
-          ← Workspace
-        </Link>
-        <button className="workspace-nama-tombol" onClick={gantiNamaProject} title="Ganti nama project">
-          {project.nama} ✏️
-        </button>
-        <span className="chip-bahasa-kecil">{project.bahasa === 'javascript' ? 'JavaScript' : 'Python'}</span>
-        <span className="header-kanan">
-          <button className="tombol tombol-kedua kecil" onClick={unduhFileAktif} title="Unduh berkas aktif">
-            ⬇️ Berkas
+        <div className="workspace-topbar-atas">
+          <Link to="/workspace" className="link-kecil" aria-label="Kembali ke daftar Workspace">
+            ← <span className="teks-aksi">Workspace</span>
+          </Link>
+          <button className="workspace-nama-tombol" onClick={gantiNamaProject} title="Ganti nama project">
+            {project.nama} ✏️
           </button>
-          <button className="tombol tombol-kedua kecil" onClick={unduhZip} title="Unduh seluruh project sebagai .zip">
-            ⬇️ .zip
+          <span className="chip-bahasa-kecil">{project.bahasa === 'javascript' ? 'JavaScript' : 'Python'}</span>
+        </div>
+        <div className="workspace-aksi">
+          <button
+            className={`tombol tombol-kedua kecil workspace-tombol-berkas ${sidebarBuka ? 'aktif' : ''}`}
+            onClick={() => setSidebarBuka((b) => !b)}
+            aria-expanded={sidebarBuka}
+          >
+            📁 Berkas
           </button>
+          <details className="menu-unduh" ref={menuUnduhRef}>
+            <summary className="tombol tombol-kedua kecil">⬇️ Unduh</summary>
+            <div className="menu-unduh-isi">
+              <button onClick={unduhFileAktif}>Berkas aktif ({aktif.split('/').pop()})</button>
+              <button onClick={unduhZip}>Seluruh project (.zip)</button>
+            </div>
+          </details>
           {jalan ? (
-            <button className="tombol tombol-berhenti" onClick={hentikan}>
+            <button className="tombol tombol-berhenti workspace-tombol-jalan" onClick={hentikan}>
               ⏹ Stop
             </button>
           ) : (
-            <button className="tombol tombol-jalan" onClick={jalankan}>
+            <button className="tombol tombol-jalan workspace-tombol-jalan" onClick={jalankan}>
               ▶ Jalankan
             </button>
           )}
-        </span>
+        </div>
       </div>
 
       {status && (
@@ -308,8 +330,18 @@ function IsiWorkspace({ projectAwal, gelap }) {
             ))}
           </div>
           <div className="workspace-split">
-            <div className="lab-editor">
-              <Editor nilai={project.files[aktif] ?? ''} onUbah={(v) => ubahIsiFile(aktif, v)} onJalankan={jalankan} bahasa={project.bahasa} gelap={gelap} />
+            <div className="lab-editor workspace-editor">
+              {layarSentuh && <BarSimbol viewRef={editorViewRef} />}
+              <div className="workspace-editor-isi">
+                <Editor
+                  nilai={project.files[aktif] ?? ''}
+                  onUbah={(v) => ubahIsiFile(aktif, v)}
+                  onJalankan={jalankan}
+                  bahasa={project.bahasa}
+                  gelap={gelap}
+                  onView={(v) => (editorViewRef.current = v)}
+                />
+              </div>
             </div>
             <div className={`lab-terminal ${tungguInput ? 'lab-terminal-tunggu' : ''}`} ref={elRef} />
           </div>

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProgress } from '../state/progress.jsx';
+import { hapusSemuaRiwayat } from '../state/riwayatUjian.js';
 import { semuaPelajaran } from '../lessons/index.js';
 import { daftarUjian } from '../ujian/index.js';
 
@@ -41,6 +42,7 @@ export default function Pengaturan() {
 
   const reset = () => {
     prog.resetProgress();
+    hapusSemuaRiwayat();
     setKonfirmasi('');
     setPesan('✅ Progress sudah direset.');
   };
@@ -115,7 +117,7 @@ export default function Pengaturan() {
       <section className="kartu-setelan kartu-bahaya">
         <h2>Reset progress</h2>
         <p className="teks-redup">
-          Menghapus semua XP, streak, status selesai, dan kode yang tersimpan. Tidak bisa dibatalkan. Ketik <b>RESET</b>{' '}
+          Menghapus semua XP, streak, status selesai, kode yang tersimpan, dan riwayat ujian. Tidak bisa dibatalkan. Ketik <b>RESET</b>{' '}
           untuk mengonfirmasi.
         </p>
         <div className="baris-tombol">

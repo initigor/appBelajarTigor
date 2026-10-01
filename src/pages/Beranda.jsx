@@ -5,6 +5,7 @@ import { daftarMateriJs, susunMateri } from '../lessons/materi.js';
 import { daftarChapterJava } from '../lessonsJava/index.js';
 import { daftarUjian } from '../ujian/index.js';
 import { useProgress } from '../state/progress.jsx';
+import { daftarRiwayat } from '../state/riwayatUjian.js';
 import { useProgressJava } from '../state/progressJava.jsx';
 import ChapterCard from '../components/ChapterCard.jsx';
 import MateriCard from '../components/MateriCard.jsx';
@@ -48,6 +49,13 @@ function useTerbuka(kunci, idDefault) {
 export default function Beranda() {
   const { data, totalXp, streak, jumlahSelesai, berikutnya, isSelesai } = useProgress();
   const progJava = useProgressJava();
+  // Jumlah percobaan ujian yang tersimpan per ujian (untuk tautan "Riwayat"); data ujian berubah → hitung ulang.
+  const riwayatPerUjian = useMemo(() => {
+    const hitung = {};
+    for (const p of daftarRiwayat()) hitung[p.ujianId] = (hitung[p.ujianId] ?? 0) + 1;
+    return hitung;
+  }, [data.ujian]);
+  const totalRiwayat = Object.values(riwayatPerUjian).reduce((a, n) => a + n, 0);
   const total = semuaPelajaran.length;
   // XP maksimum = semua pelajaran + bonus semua ujian.
   const totalXpMaks = semuaPelajaran.reduce((a, p) => a + p.xp, 0) + daftarUjian.reduce((a, u) => a + u.xp, 0);
@@ -111,6 +119,13 @@ export default function Beranda() {
 
       <BannerInstall />
 
+      {totalRiwayat > 0 && (
+        <Link className="tautan-riwayat" to="/riwayat">
+          <span>📜 Riwayat ujian</span>
+          <span className="teks-redup">{totalRiwayat} percobaan · tinjau lagi soal yang keliru →</span>
+        </Link>
+      )}
+
       <div className="daftar-materi">
         {daftarMateri.map((m) => {
           const ujianMateri = daftarUjian.filter((u) => m.chapters.some((c) => c.id === u.setelahChapter));
@@ -145,7 +160,7 @@ export default function Beranda() {
                 {daftarUjian
                   .filter((u) => u.setelahChapter === c.id)
                   .map((u) => (
-                    <UjianCard key={u.id} ujian={u} status={data.ujian?.[u.id]} isSelesai={isSelesai} />
+                    <UjianCard key={u.id} ujian={u} status={data.ujian?.[u.id]} isSelesai={isSelesai} jumlahRiwayat={riwayatPerUjian[u.id] ?? 0} />
                   ))}
               </Fragment>
             ))}
