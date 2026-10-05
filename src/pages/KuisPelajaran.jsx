@@ -5,6 +5,9 @@ import { kuisById } from '../kuis/index.js';
 import { useProgress } from '../state/progress.jsx';
 import Markdown from '../components/Markdown.jsx';
 
+/** Pelajaran bacaan (tipe 'teks') dianggap selesai bila skor kuisnya mencapai ambang ini. */
+const AMBANG_SELESAI_TEKS = 60;
+
 /** Teks biasa dengan `kode` inline diubah menjadi <code>, dan **tebal** menjadi <b>. */
 function TeksInline({ teks }) {
   return teks.split(/(`[^`]+`|\*\*[^*]+\*\*)/).map((bagian, i) => {
@@ -54,6 +57,7 @@ function IsiKuis({ pelajaran, kuis }) {
   const [indeks, setIndeks] = useState(0);
   const [pilihan, setPilihan] = useState(null); // indeks opsi yang dipilih untuk soal saat ini
   const [jawaban, setJawaban] = useState([]); // pilihan tiap soal yang sudah dijawab
+  const [baruSelesai, setBaruSelesai] = useState(false); // pelajaran bacaan baru saja diselesaikan lewat kuis ini
 
   const mulai = () => {
     setSoal(siapkanSoal(kuis));
@@ -75,11 +79,17 @@ function IsiKuis({ pelajaran, kuis }) {
     }
     setJawaban(baru);
     const benar = baru.filter((p, i) => soal[i].opsi[p].benar).length;
-    prog.terapkanHasilKuis(pelajaran.id, Math.round((benar / soal.length) * 100));
+    const persen = Math.round((benar / soal.length) * 100);
+    prog.terapkanHasilKuis(pelajaran.id, persen);
+    if (pelajaran.tipe === 'teks' && persen >= AMBANG_SELESAI_TEKS && !prog.isSelesai(pelajaran.id)) {
+      prog.tandaiSelesai(pelajaran);
+      setBaruSelesai(true);
+    }
     setFase('hasil');
     window.scrollTo(0, 0);
   };
 
+  const bacaan = pelajaran.tipe === 'teks';
   const kembali = (
     <Link to={`/belajar/${pelajaran.id}`} className="link-kecil">
       ← Pelajaran
@@ -218,6 +228,17 @@ function IsiKuis({ pelajaran, kuis }) {
           <div className="teks-redup">{status && status.terbaik > persen ? `Skor terbaikmu ${status.terbaik}%` : 'Kuis boleh diulang sebanyak yang kamu mau (soalnya diacak pilihannya).'}</div>
         </div>
       </section>
+
+      {bacaan && baruSelesai && (
+        <p className="selamat">
+          ✅ Pelajaran selesai! <b>+{pelajaran.xp} XP</b> masuk ke total XP-mu.
+        </p>
+      )}
+      {bacaan && !baruSelesai && !prog.isSelesai(pelajaran.id) && (
+        <p className="pemberitahuan-ujian">
+          Pelajaran ini baru dianggap selesai saat skor kuis minimal {AMBANG_SELESAI_TEKS}%. Baca rangkumannya lagi lalu coba sekali lagi.
+        </p>
+      )}
 
       {salah.length > 0 && (
         <section className="tinjauan-soal">

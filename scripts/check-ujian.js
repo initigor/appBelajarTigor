@@ -84,7 +84,7 @@ let totalSoal = 0;
 
 for (const u of target) {
   const masalah = [];
-  const hitung = { 'pilihan-ganda': 0, 'prediksi-output': 0, kode: 0 };
+  const hitung = { 'pilihan-ganda': 0, isian: 0, 'prediksi-output': 0, kode: 0 };
 
   for (const s of u.soal) {
     totalSoal++;
@@ -128,14 +128,14 @@ for (const u of target) {
   const salah = {};
   for (const s of pilih) {
     const urutan = s.tipe === 'pilihan-ganda' ? urutanPilihan(s) : null;
-    const jawabBenar = s.tipe === 'pilihan-ganda' ? urutan.indexOf(s.benar) : s.tipe === 'prediksi-output' ? s.kunci : null;
+    const jawabBenar = s.tipe === 'pilihan-ganda' ? urutan.indexOf(s.benar) : s.tipe === 'isian' ? s.jawaban[0] : s.tipe === 'prediksi-output' ? s.kunci : null;
     benar[s.id] = s.tipe === 'kode' ? true : nilaiStatis(s, jawabBenar, urutan);
     salah[s.id] = false;
   }
   if (hitungHasil(u, pilih, benar).persen !== 100) masalah.push('simulasi semua benar ≠ 100%');
   if (hitungHasil(u, pilih, salah).persen !== 0) masalah.push('simulasi semua salah ≠ 0%');
 
-  const info = `${u.soal.length} soal (${hitung['pilihan-ganda']} PG, ${hitung['prediksi-output']} output, ${hitung.kode} kode) → ujian ${ringkas.soal} soal / ${ringkas.poin} poin`;
+  const info = `${u.soal.length} soal (${hitung['pilihan-ganda']} PG, ${hitung.isian} isian, ${hitung['prediksi-output']} output, ${hitung.kode} kode) → ujian ${ringkas.soal} soal / ${ringkas.poin} poin`;
   if (masalah.length) {
     gagalTotal++;
     console.log(`❌ ${u.file}  (${u.id}) — ${info}`);

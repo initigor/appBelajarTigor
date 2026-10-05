@@ -2,12 +2,14 @@ import { Link } from 'react-router-dom';
 import { daftarChapter } from '../lessons/index.js';
 import { ringkasKomposisi } from '../ujian/susun.js';
 
-/** "Chapter 1–3" untuk rentang berurutan, atau "Chapter 1, 4" jika tidak berurutan. */
+/** "Chapter 1–3" untuk rentang berurutan, atau "Chapter 1, 4" jika tidak berurutan ("Bab ..." untuk Arsikom). */
 export function labelRentang(ids) {
-  if (ids.length === 1) return `Chapter ${ids[0]}`;
-  const urut = [...ids].sort((a, b) => a - b);
-  const berurutan = urut.every((n, i) => i === 0 || n === urut[i - 1] + 1);
-  return berurutan ? `Chapter ${urut[0]}–${urut.at(-1)}` : `Chapter ${urut.join(', ')}`;
+  const urut = [...ids].sort((a, b) => a - b).map((id) => daftarChapter.find((c) => c.id === id) ?? { id });
+  const awalan = urut[0].awalan ?? 'Chapter';
+  const nomor = urut.map((c) => c.nomor ?? c.id);
+  if (nomor.length === 1) return `${awalan} ${nomor[0]}`;
+  const berurutan = nomor.every((n, i) => i === 0 || n === nomor[i - 1] + 1);
+  return berurutan ? `${awalan} ${nomor[0]}–${nomor.at(-1)}` : `${awalan} ${nomor.join(', ')}`;
 }
 
 /**

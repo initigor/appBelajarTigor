@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { daftarChapter, semuaPelajaran } from '../lessons/index.js';
+import { labelBab } from '../lessons/chapters.js';
 import { daftarMateriJs, susunMateri } from '../lessons/materi.js';
 import { daftarChapterJava } from '../lessonsJava/index.js';
 import { daftarUjian } from '../ujian/index.js';
@@ -160,7 +161,7 @@ export default function Beranda() {
                   isSelesai={isSelesai}
                   kuisStatus={data.kuis}
                   berikutnyaId={berikutnya?.id}
-                  labelNomor={`Chapter ${c.id}`}
+                  labelNomor={labelBab(c)}
                 />
                 {/* Ujian muncul tepat setelah chapter terakhir yang diujikan */}
                 {daftarUjian

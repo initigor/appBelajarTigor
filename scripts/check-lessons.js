@@ -49,7 +49,7 @@ for (const folder of readdirSync(folderPelajaran).sort()) {
 }
 
 const { semuaPelajaran } = susunPelajaran(modul);
-const target = semuaPelajaran.filter((p) => !filter || p.id.toLowerCase().includes(filter) || p.file.toLowerCase().includes(filter));
+const target = semuaPelajaran.filter((p) => p.tipe !== 'teks').filter((p) => !filter || p.id.toLowerCase().includes(filter) || p.file.toLowerCase().includes(filter));
 
 let rootLama = null;
 

@@ -2,9 +2,9 @@
 // Semuanya fungsi murni (tanpa React/DOM), dipakai oleh halaman ujian dan oleh scripts/check-ujian.js.
 
 /** Bobot poin per tipe soal: soal yang lebih sulit (mengetik kode) bernilai lebih besar. */
-export const BOBOT = { 'pilihan-ganda': 1, 'prediksi-output': 2, kode: 3 };
+export const BOBOT = { 'pilihan-ganda': 1, isian: 2, 'prediksi-output': 2, kode: 3 };
 export const TIPE_SOAL = Object.keys(BOBOT);
-export const LABEL_TIPE = { 'pilihan-ganda': 'Pilihan ganda', 'prediksi-output': 'Prediksi output', kode: 'Menulis kode' };
+export const LABEL_TIPE = { 'pilihan-ganda': 'Pilihan ganda', isian: 'Isian singkat', 'prediksi-output': 'Prediksi output', kode: 'Menulis kode' };
 
 /** Chapter dianggap "perlu diulang" jika skornya di bawah persen ini. */
 export const AMBANG_CHAPTER_LEMAH = 60;
@@ -27,6 +27,9 @@ function validasiSoal(s, ujian, path) {
     wajib(Array.isArray(s.pilihan) && s.pilihan.length >= 3 && s.pilihan.every((p) => typeof p === 'string' && p), `${di}: pilihan harus array berisi minimal 3 string`);
     wajib(new Set(s.pilihan).size === s.pilihan.length, `${di}: ada pilihan jawaban yang kembar`);
     wajib(Number.isInteger(s.benar) && s.benar >= 0 && s.benar < s.pilihan.length, `${di}: "benar" harus indeks pilihan yang valid`);
+  } else if (s.tipe === 'isian') {
+    wajib(typeof s.pertanyaan === 'string' && s.pertanyaan.trim(), `${di}: pertanyaan kosong`);
+    wajib(Array.isArray(s.jawaban) && s.jawaban.length > 0 && s.jawaban.every((j) => typeof j === 'string' && j.trim()), `${di}: jawaban harus array berisi minimal 1 string (semua bentuk jawaban yang diterima)`);
   } else if (s.tipe === 'prediksi-output') {
     wajib(typeof s.kode === 'string' && s.kode.trim(), `${di}: kode kosong`);
     wajib(typeof s.kunci === 'string' && s.kunci.trim(), `${di}: kunci (output yang benar) kosong`);
@@ -176,6 +179,19 @@ export function samaOutput(jawaban, kunci) {
   return a.every((baris, i) => baris === b[i] || (punyaStruktur(baris) && punyaStruktur(b[i]) && longgar(baris) === longgar(b[i])));
 }
 
+const normIsian = (t) => String(t ?? '').trim().toLowerCase().replace(/\s+/g, '').replace(/,/g, '.').replace(/_/g, '');
+const angka = (t) => (/^-?\d+(\.\d+)?$/.test(t) ? Number(t) : null);
+
+/** Bandingkan jawaban isian singkat dengan daftar jawaban yang diterima. Spasi/huruf besar diabaikan; "0,5" = "0.5"; angka dibandingkan secara numerik. */
+export function samaIsian(jawaban, diterima) {
+  const a = normIsian(jawaban);
+  if (a === '') return false;
+  return diterima.some((d) => {
+    const b = normIsian(d);
+    return a === b || (angka(a) !== null && angka(a) === angka(b));
+  });
+}
+
 /** Nilai soal yang bisa dinilai langsung (tanpa menjalankan kode). Soal 'kode' dinilai terpisah oleh halaman ujian. */
 export function nilaiStatis(soal, jawaban, urutan) {
   if (soal.tipe === 'pilihan-ganda') {
@@ -183,6 +199,7 @@ export function nilaiStatis(soal, jawaban, urutan) {
     const asli = urutan ? urutan[jawaban] : jawaban;
     return asli === soal.benar;
   }
+  if (soal.tipe === 'isian') return samaIsian(jawaban, soal.jawaban);
   if (soal.tipe === 'prediksi-output') return samaOutput(jawaban, soal.kunci);
   return false;
 }
@@ -190,6 +207,7 @@ export function nilaiStatis(soal, jawaban, urutan) {
 /** Jawaban benar dalam bentuk teks (untuk tinjauan setelah ujian). */
 export function teksJawabanBenar(soal) {
   if (soal.tipe === 'pilihan-ganda') return soal.pilihan[soal.benar];
+  if (soal.tipe === 'isian') return soal.jawaban[0];
   if (soal.tipe === 'prediksi-output') return soal.kunci;
   return soal.solusi;
 }

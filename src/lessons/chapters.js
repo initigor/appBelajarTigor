@@ -13,4 +13,18 @@ export const chapters = [
   { id: 11, folder: '11-react-list', judul: 'React List & Kondisional', ikon: '📋', deskripsi: 'map + key, render kondisional, dan useEffect.' },
   { id: 12, folder: '12-proyek-akhir', judul: 'Proyek Akhir: Portofolio', ikon: '🏆', deskripsi: 'Bangun web portofolio mini langkah demi langkah.' },
   { id: 13, folder: '13-backend-node', judul: 'Backend Node.js & API', ikon: '🔌', deskripsi: 'Node.js, npm, cara kerja HTTP, routing ala Express, REST API, middleware, sampai proyek kalkulator bisnis UMKM.' },
+  // ---------- Arsitektur & Organisasi Komputer (Arsikom): pelajaran berupa bacaan + kuis (tipe 'teks') ----------
+  { id: 14, folder: '14-arsikom-pengantar', awalan: 'Bab', nomor: 1, judul: 'Pengantar Arsikom & Kinerja', ikon: '🖥️', deskripsi: 'Arsitektur vs organisasi, sejarah, von Neumann vs Harvard, dan cara mengukur kinerja (CPI, Amdahl).' },
+  { id: 15, folder: '15-arsikom-data', awalan: 'Bab', nomor: 2, judul: 'Representasi Data', ikon: '🔢', deskripsi: 'Sistem bilangan, konversi, bilangan bertanda (komplemen 2), karakter, dan urutan byte (endianness).' },
+  { id: 16, folder: '16-arsikom-aritmetika', awalan: 'Bab', nomor: 3, judul: 'Aritmetika Komputer', ikon: '➕', deskripsi: 'Penjumlahan & overflow, operasi logika/geser, perkalian Booth, pembagian, dan floating point IEEE 754.' },
+  { id: 17, folder: '17-arsikom-digital', awalan: 'Bab', nomor: 4, judul: 'Logika Digital', ikon: '🔌', deskripsi: 'Gerbang logika, aljabar Boolean, K-map, rangkaian kombinasional dan sekuensial, register & counter.' },
+  { id: 18, folder: '18-arsikom-cpu', awalan: 'Bab', nomor: 5, judul: 'Struktur CPU & Siklus Instruksi', ikon: '🧠', deskripsi: 'Komponen CPU, register, bus, siklus fetch-decode-execute, dan interupsi.' },
+  { id: 19, folder: '19-arsikom-instruksi', awalan: 'Bab', nomor: 6, judul: 'Set Instruksi & Pengalamatan', ikon: '📜', deskripsi: 'Format instruksi, jenis operasi, mode pengalamatan, CISC vs RISC, dan assembly dasar.' },
+  { id: 20, folder: '20-arsikom-kontrol-pipeline', awalan: 'Bab', nomor: 7, judul: 'Unit Kontrol & Pipeline', ikon: '🚦', deskripsi: 'Hardwired vs microprogrammed, pipeline, hazard, prediksi cabang, superscalar & out-of-order.' },
+  { id: 21, folder: '21-arsikom-memori', awalan: 'Bab', nomor: 8, judul: 'Memori & Cache', ikon: '💾', deskripsi: 'Hierarki memori, SRAM/DRAM, pemetaan cache, kebijakan tulis, AMAT, dan memori virtual.' },
+  { id: 22, folder: '22-arsikom-io', awalan: 'Bab', nomor: 9, judul: 'I/O, Bus & Penyimpanan', ikon: '🔗', deskripsi: 'Interkoneksi bus, teknik I/O (polling, interupsi, DMA), HDD/SSD, dan RAID.' },
+  { id: 23, folder: '23-arsikom-paralel', awalan: 'Bab', nomor: 10, judul: 'Paralelisme & Arsitektur Modern', ikon: '🚀', deskripsi: 'Taksonomi Flynn, multicore & koherensi cache, GPU, dan tren arsitektur modern.' },
 ];
+
+/** Label nomor chapter untuk tampilan: "Chapter 3" (JavaScript) atau "Bab 3" (Arsikom). */
+export const labelBab = (c) => `${c.awalan ?? 'Chapter'} ${c.nomor ?? c.id}`;

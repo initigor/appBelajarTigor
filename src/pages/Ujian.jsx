@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { daftarChapter, pelajaranById } from '../lessons/index.js';
+import { labelBab } from '../lessons/chapters.js';
 import { soalKodeById, ujianById } from '../ujian/index.js';
 import {
   AMBANG_CHAPTER_LEMAH,
@@ -64,7 +65,7 @@ function hapusDraf(ujian) {
 
 function labelChapter(cid) {
   const c = daftarChapter.find((x) => x.id === cid);
-  return c ? `Chapter ${cid}: ${c.judul}` : `Chapter ${cid}`;
+  return c ? `${labelBab(c)}: ${c.judul}` : `Chapter ${cid}`;
 }
 
 export function formatWaktu(ms) {
@@ -87,7 +88,7 @@ function TeksInline({ teks }) {
 
 function terjawab(soal, jawaban) {
   if (soal.tipe === 'pilihan-ganda') return typeof jawaban === 'number';
-  if (soal.tipe === 'prediksi-output') return typeof jawaban === 'string' && jawaban.trim() !== '';
+  if (soal.tipe === 'prediksi-output' || soal.tipe === 'isian') return typeof jawaban === 'string' && jawaban.trim() !== '';
   return typeof jawaban === 'string' && jawaban.trim() !== '' && jawaban !== soal.kodeAwal;
 }
 
@@ -266,7 +267,7 @@ function Intro({ ujian, dataUjian, prog, onMulai }) {
             return (
               <li key={c.id}>
                 <span>
-                  {c.ikon} Chapter {c.id}: {c.judul}
+                  {c.ikon} {labelBab(c)}: {c.judul}
                 </span>
                 <span className={done === n ? 'chip chip-lulus' : 'chip'}>
                   {done}/{n} pelajaran
@@ -357,6 +358,7 @@ function Pengerjaan({ ujian, daftarSoal, urutan, jawaban, setJawaban, indeks, se
         {soal.tipe === 'pilihan-ganda' && (
           <SoalPilihanGanda key={soal.id} soal={soal} urutan={urutan[soal.id]} jawaban={jawaban[soal.id]} setJawaban={(v) => setJawaban(soal.id, v)} />
         )}
+        {soal.tipe === 'isian' && <SoalIsian key={soal.id} soal={soal} jawaban={jawaban[soal.id]} setJawaban={(v) => setJawaban(soal.id, v)} />}
         {soal.tipe === 'prediksi-output' && <SoalOutput key={soal.id} soal={soal} jawaban={jawaban[soal.id]} setJawaban={(v) => setJawaban(soal.id, v)} />}
         {soal.tipe === 'kode' && <SoalKode key={soal.id} soal={soal} kode={jawaban[soal.id] ?? soal.kodeAwal} setKode={(v) => setJawaban(soal.id, v)} gelap={gelap} />}
       </div>
@@ -409,6 +411,27 @@ function SoalPilihanGanda({ soal, urutan, jawaban, setJawaban }) {
           </label>
         ))}
       </div>
+    </div>
+  );
+}
+
+function SoalIsian({ soal, jawaban, setJawaban }) {
+  return (
+    <div className="panel-soal-uji">
+      <Markdown>{soal.pertanyaan}</Markdown>
+      <input
+        className="input-isian"
+        type="text"
+        value={jawaban ?? ''}
+        onChange={(e) => setJawaban(e.target.value)}
+        placeholder="Tulis jawabanmu di sini…"
+        spellCheck={false}
+        autoComplete="off"
+        autoCapitalize="none"
+        autoCorrect="off"
+        aria-label="Jawaban isian"
+      />
+      <p className="teks-redup kecil-soal">Spasi dan huruf besar/kecil tidak dipersoalkan. Tulis jawaban saja, tanpa kalimat.</p>
     </div>
   );
 }
@@ -559,7 +582,7 @@ export function HasilUjian({ ujian, hasil, onUlangi, riwayatWaktu, jumlahHilang 
       </section>
 
       <section className="kartu-setelan">
-        <h2>Hasil per chapter</h2>
+        <h2>Hasil per bagian materi</h2>
         <div className="daftar-hasil-uji">
           {ujian.chapterIds
             .filter((cid) => perChapter[cid])
@@ -666,6 +689,21 @@ function Tinjauan({ soal, benar, nomor, urutan, jawaban, pesan }) {
           {!benar && (
             <p className="jawaban-benar">
               ✅ Jawaban benar: <code>{teksJawabanBenar(soal)}</code>
+            </p>
+          )}
+        </>
+      )}
+
+      {soal.tipe === 'isian' && (
+        <>
+          <Markdown>{soal.pertanyaan}</Markdown>
+          <p className={benar ? 'jawaban-benar' : 'jawaban-salah'}>
+            {benar ? '✅' : '❌'} Jawabanmu: {jawaban?.trim() ? <code>{jawaban}</code> : <i>tidak dijawab</i>}
+          </p>
+          {!benar && (
+            <p className="jawaban-benar">
+              ✅ Jawaban benar: <code>{teksJawabanBenar(soal)}</code>
+              {soal.jawaban.length > 1 && <span className="teks-redup"> (juga diterima: {soal.jawaban.slice(1).join(', ')})</span>}
             </p>
           )}
         </>

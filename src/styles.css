@@ -3168,3 +3168,75 @@ a {
     justify-content: center;
   }
 }
+
+/* ---------- Pelajaran bacaan (tipe 'teks', mis. Arsikom) ---------- */
+.halaman.baca {
+  max-width: 800px;
+}
+.halaman.baca > .bar-pelajaran {
+  margin: -8px 0 18px;
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+.bacaan .md {
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+.bacaan .md h1 {
+  font-size: 1.55rem;
+  margin-top: 8px;
+}
+.bacaan .md h2 {
+  margin-top: 30px;
+  padding-top: 6px;
+  border-top: 1px solid var(--garis);
+}
+.bacaan .md pre {
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.bacaan .md li {
+  margin: 4px 0;
+}
+.kotak-kuis-baca {
+  margin-top: 34px;
+  padding: 6px 20px 18px;
+  border: 2px solid var(--aksen);
+  background: var(--aksen-lembut);
+  border-radius: 14px;
+}
+.kotak-kuis-baca h2 {
+  font-size: 1.1rem;
+  margin: 12px 0 4px;
+}
+.input-isian {
+  font: inherit;
+  font-family: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  font-size: 1rem;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--garis);
+  background: var(--bg-2);
+  color: var(--teks);
+  width: 100%;
+  max-width: 460px;
+}
+.input-isian:focus {
+  outline: 2px solid var(--aksen);
+  outline-offset: 1px;
+}
+@media (max-width: 700px) {
+  .halaman.baca > .bar-pelajaran {
+    gap: 8px;
+  }
+  .halaman.baca .breadcrumb {
+    order: 3;
+    flex-basis: 100%;
+    white-space: normal;
+    text-align: left;
+  }
+  .bacaan .md {
+    font-size: 1rem;
+  }
+}
