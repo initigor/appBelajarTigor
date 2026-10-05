@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { daftarChapter, pelajaranById } from '../lessons/index.js';
 import { useProgress } from '../state/progress.jsx';
+import { kuisById } from '../kuis/index.js';
 import { htmlPreview, jalankanPelajaran } from '../engine/runner.js';
 import Editor from '../components/Editor.jsx';
 import Markdown from '../components/Markdown.jsx';
@@ -231,6 +232,12 @@ function HalamanPelajaran({ pelajaran }) {
             )}
           </div>
 
+          {kuisById[pelajaran.id] && (
+            <Link className="tombol tombol-kedua tombol-kuis" to={`/belajar/${pelajaran.id}/kuis`}>
+              📝 Rangkuman & kuis{prog.data.kuis?.[pelajaran.id] ? ` · terbaik ${prog.data.kuis[pelajaran.id].terbaik}%` : ''}
+            </Link>
+          )}
+
           {mode !== 'desktop' && (
             <button className="tombol tombol-besar tombol-mulai-kode" onClick={() => setPanel('kode')}>
               💻 Mulai ngoding →
@@ -374,10 +381,20 @@ function HalamanPelajaran({ pelajaran }) {
             <p className="teks-redup">
               Total XP: {prog.totalXp} · 🔥 Streak {prog.streak} hari
             </p>
+            {kuisById[pelajaran.id] && (
+              <p className="teks-redup modal-saran">
+                Biar materinya menetap, baca rangkuman dan jawab kuis singkatnya dulu sebelum lanjut.
+              </p>
+            )}
             <div className="modal-tombol">
               <button className="tombol tombol-kedua" onClick={() => setRayakan(null)}>
                 Tetap di sini
               </button>
+              {kuisById[pelajaran.id] && (
+                <Link className="tombol tombol-kuis-modal" to={`/belajar/${pelajaran.id}/kuis`}>
+                  📝 Rangkuman & kuis
+                </Link>
+              )}
               <button className="tombol tombol-lanjut" onClick={keBerikutnya} autoFocus>
                 {pelajaran.sesudah ? 'Lanjut →' : 'Ke beranda'}
               </button>

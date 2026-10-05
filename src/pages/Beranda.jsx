@@ -153,6 +153,7 @@ export default function Beranda() {
                   onToggle={() => toggleChapter(c.id)}
                   basePath="/belajar"
                   isSelesai={isSelesai}
+                  kuisStatus={data.kuis}
                   berikutnyaId={berikutnya?.id}
                   labelNomor={`Chapter ${c.id}`}
                 />

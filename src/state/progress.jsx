@@ -8,6 +8,7 @@ const awal = () => ({
   kode: {}, // { [id]: string } kode terakhir di editor
   percobaan: {}, // { [id]: number } berapa kali "Jalankan" ditekan
   ujian: {}, // { [idUjian]: { terbaik, lulus, tanggalLulus, percobaan, xp, terakhir, soalTerakhir } }
+  kuis: {}, // { [idPelajaran]: { terbaik, terakhir, percobaan, tanggal } } kuis rangkuman per pelajaran
   streak: { jumlah: 0, terakhir: null },
   tema: 'sistem', // 'sistem' | 'terang' | 'gelap'
   diubah: 0, // timestamp perubahan terakhir (untuk sinkron antar-perangkat)
@@ -128,6 +129,22 @@ export function ProgressProvider({ children }) {
     },
     [ubah],
   );
+  /** Simpan hasil satu kali mengerjakan kuis rangkuman sebuah pelajaran (persen 0–100). */
+  const terapkanHasilKuis = useCallback(
+    (id, persen) => {
+      ubah((d) => {
+        const lama = d.kuis?.[id] ?? {};
+        return {
+          ...d,
+          kuis: {
+            ...d.kuis,
+            [id]: { terbaik: Math.max(lama.terbaik ?? 0, persen), terakhir: persen, percobaan: (lama.percobaan ?? 0) + 1, tanggal: tanggalLokal() },
+          },
+        };
+      });
+    },
+    [ubah],
+  );
   const setTema = useCallback((tema) => setData((d) => ({ ...d, tema })), []);
   const resetProgress = useCallback(() => {
     const kini = Date.now();
@@ -159,12 +176,13 @@ export function ProgressProvider({ children }) {
       tambahPercobaan,
       tandaiSelesai,
       terapkanHasilUjian,
+      terapkanHasilKuis,
       setTema,
       resetProgress,
       imporData,
       terapkanSinkron,
     };
-  }, [data, temaAktif, simpanKode, hapusKode, tambahPercobaan, tandaiSelesai, terapkanHasilUjian, setTema, resetProgress, imporData, terapkanSinkron]);
+  }, [data, temaAktif, simpanKode, hapusKode, tambahPercobaan, tandaiSelesai, terapkanHasilUjian, terapkanHasilKuis, setTema, resetProgress, imporData, terapkanSinkron]);
 
   return <Ctx.Provider value={nilai}>{children}</Ctx.Provider>;
 }
