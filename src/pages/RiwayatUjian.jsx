@@ -1,14 +1,22 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ujianById } from '../ujian/index.js';
-import { ambilPercobaan, daftarRiwayat, hapusPercobaan, hapusSemuaRiwayat, MAKS_PER_UJIAN } from '../state/riwayatUjian.js';
+import { ambilPercobaan, daftarRiwayat, hapusPercobaan, hapusSemuaRiwayat, MAKS_PER_UJIAN, useVersiRiwayat } from '../state/riwayatUjian.js';
+import { useAkun } from '../state/akun.jsx';
 import { HasilUjian, formatWaktu } from './Ujian.jsx';
 
 // ---------- Daftar riwayat ----------
 
 export function RiwayatDaftar() {
   const [params, setParams] = useSearchParams();
-  const [semua, setSemua] = useState(() => daftarRiwayat().filter((p) => ujianById[p.ujianId]));
+  const { akun, sinkronRiwayat } = useAkun();
+  const versi = useVersiRiwayat();
+  // Ambil yang terbaru dari cloud (mis. percobaan yang dikerjakan di perangkat lain) setiap halaman ini dibuka.
+  useEffect(() => {
+    sinkronRiwayat?.();
+  }, [sinkronRiwayat]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const semua = useMemo(() => daftarRiwayat().filter((p) => ujianById[p.ujianId]), [versi]);
   const filter = ujianById[params.get('ujian')] ? params.get('ujian') : null;
 
   const ujianAda = useMemo(() => [...new Set(semua.map((p) => p.ujianId))].map((id) => ujianById[id]), [semua]);
@@ -17,12 +25,10 @@ export function RiwayatDaftar() {
   const hapus = (p) => {
     if (!window.confirm('Hapus percobaan ini dari riwayat? Skor terbaik dan status lulusmu tidak berubah.')) return;
     hapusPercobaan(p.id);
-    setSemua((s) => s.filter((x) => x.id !== p.id));
   };
   const hapusSemua = () => {
     if (!window.confirm('Hapus SELURUH riwayat ujian di perangkat ini? Skor terbaik dan status lulusmu tidak berubah.')) return;
     hapusSemuaRiwayat();
-    setSemua([]);
   };
 
   return (
@@ -31,7 +37,14 @@ export function RiwayatDaftar() {
       <h1>📜 Riwayat Ujian</h1>
       <p className="teks-redup">
         Setiap kali selesai ujian, jawaban dan pembahasannya tersimpan di sini. Buka lagi kapan saja untuk melihat soal mana yang keliru dan kenapa. Riwayat
-        disimpan di perangkat ini (maksimal {MAKS_PER_UJIAN} percobaan terakhir per ujian).
+        tersimpan di perangkat ini (maksimal {MAKS_PER_UJIAN} percobaan terakhir per ujian).{' '}
+        {akun ? (
+          <span>☁️ Tersinkron dengan akun <b>{akun.username}</b>, jadi juga muncul di perangkat lain.</span>
+        ) : (
+          <span>
+            Mau melihatnya juga di HP/laptop lain? <Link to="/akun">Masuk ke akun</Link>: riwayat ikut tersinkron.
+          </span>
+        )}
       </p>
 
       {semua.length === 0 ? (
@@ -172,7 +185,9 @@ function susunHasil(p, ujian) {
 
 export function RiwayatDetail() {
   const { rid } = useParams();
-  const p = useMemo(() => ambilPercobaan(rid), [rid]);
+  const versi = useVersiRiwayat();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const p = useMemo(() => ambilPercobaan(rid), [rid, versi]);
   const ujian = p ? ujianById[p.ujianId] : null;
   const disusun = useMemo(() => (p && ujian ? susunHasil(p, ujian) : null), [p, ujian]);
 
@@ -180,7 +195,7 @@ export function RiwayatDetail() {
     return (
       <main className="halaman sempit">
         <h1>Riwayat tidak ditemukan 🤔</h1>
-        <p className="teks-redup">Percobaan ini mungkin sudah dihapus, atau tersimpan di perangkat lain.</p>
+        <p className="teks-redup">Percobaan ini mungkin sudah dihapus, atau dikerjakan di perangkat lain yang belum tersinkron. Masuk ke akun yang sama di kedua perangkat supaya riwayatnya muncul.</p>
         <Link className="tombol" to="/riwayat">
           ← Semua riwayat
         </Link>

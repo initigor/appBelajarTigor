@@ -3,6 +3,8 @@ import { HttpError } from './http.js';
 
 export const kunciUser = (u) => `user:${u}`;
 export const kunciProgress = (u) => `progress:${u}`;
+export const kunciRiwayat = (u) => `riwayat:${u}`;
+export const kunciWorkspace = (u) => `workspace:${u}`;
 
 /** Pastikan request membawa token yang valid & akunnya masih ada. */
 export async function penggunaAktif(req, db) {

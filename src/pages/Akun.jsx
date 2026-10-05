@@ -112,8 +112,8 @@ function FormMasuk() {
 
       <p className="teks-redup kecil-akun">
         {mode === 'daftar'
-          ? 'Progress yang sudah ada di perangkat ini akan ikut tersimpan ke akun barumu. Simpan password baik-baik, karena belum ada fitur lupa password.'
-          : 'Setelah masuk, progress di perangkat ini digabung dengan progress di akunmu. Tidak ada pelajaran yang hilang.'}
+          ? 'Progress, riwayat ujian, dan project Workspace yang sudah ada di perangkat ini akan ikut tersimpan ke akun barumu. Simpan password baik-baik, karena belum ada fitur lupa password.'
+          : 'Setelah masuk, progress, riwayat ujian, dan project Workspace di perangkat ini digabung dengan yang ada di akunmu. Tidak ada pelajaran yang hilang.'}
       </p>
     </section>
   );
@@ -211,7 +211,7 @@ function PanelAkun() {
             }}
           >
             <p className="teks-redup">
-              Akun dan progress di cloud akan dihapus permanen. Progress di perangkat ini tidak ikut terhapus. Masukkan password untuk
+              Akun, progress, riwayat ujian, dan Workspace di cloud akan dihapus permanen. Progress di perangkat ini tidak ikut terhapus. Masukkan password untuk
               konfirmasi.
             </p>
             <input className="input" type="password" placeholder="Password" autoComplete="current-password" value={f.lama} onChange={(e) => setF({ ...f, lama: e.target.value })} required />
