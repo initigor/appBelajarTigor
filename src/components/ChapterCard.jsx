@@ -6,7 +6,7 @@ import ProgressBar from './ProgressBar.jsx';
  * `renderIsi`, kalau diberikan, menggantikan daftar pelajaran bawaan (dipakai course Java untuk
  * menampilkan pilihan jalur "Uji Pemahaman" / "Belajar dari awal" sebelum daftar pelajaran muncul).
  */
-export default function ChapterCard({ chapter, buka, onToggle, basePath, isSelesai, berikutnyaId, isRemedial, labelNomor, renderIsi, footerIsi, kuisStatus }) {
+export default function ChapterCard({ chapter, buka, onToggle, basePath, isSelesai, berikutnyaId, isRemedial, labelNomor, renderIsi, footerIsi, kuisStatus, sintaksPath, jumlahSintaks }) {
   const n = chapter.pelajaran.length;
   const selesai = chapter.pelajaran.filter((p) => isSelesai(p.id)).length;
   const tuntas = n > 0 && selesai === n;
@@ -57,6 +57,12 @@ export default function ChapterCard({ chapter, buka, onToggle, basePath, isSeles
             </ol>
           )}
           {footerIsi}
+          {sintaksPath && jumlahSintaks > 0 && (
+            <Link className="chapter-sintaks" to={sintaksPath}>
+              <span>📌 Sintaks penting chapter ini</span>
+              <span className="teks-redup">{jumlahSintaks} sintaks + fungsinya →</span>
+            </Link>
+          )}
         </div>
       </div>
     </article>
