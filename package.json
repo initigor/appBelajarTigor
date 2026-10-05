@@ -8,12 +8,13 @@
     "dev:hp": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "check-lessons": "node scripts/check-lessons.js && node scripts/check-lessons-java.js && node scripts/check-ujian.js && node scripts/check-kuis.js",
+    "check-lessons": "node scripts/check-lessons.js && node scripts/check-lessons-java.js && node scripts/check-ujian.js && node scripts/check-kuis.js && node scripts/check-sintaks.js",
     "check-lessons-java": "node scripts/check-lessons-java.js",
     "check-bank-java": "node scripts/check-bank-java.js",
     "ikon": "node scripts/buat-ikon.js",
     "check-ujian": "node scripts/check-ujian.js",
-    "check-kuis": "node scripts/check-kuis.js"
+    "check-kuis": "node scripts/check-kuis.js",
+    "check-sintaks": "node scripts/check-sintaks.js"
   },
   "dependencies": {
     "@babel/standalone": "^7.29.9",

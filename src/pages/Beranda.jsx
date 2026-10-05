@@ -4,6 +4,7 @@ import { daftarChapter, semuaPelajaran } from '../lessons/index.js';
 import { daftarMateriJs, susunMateri } from '../lessons/materi.js';
 import { daftarChapterJava } from '../lessonsJava/index.js';
 import { daftarUjian } from '../ujian/index.js';
+import { jumlahSintaks } from '../lessons/sintaks.js';
 import { useProgress } from '../state/progress.jsx';
 import { daftarRiwayat, useVersiRiwayat } from '../state/riwayatUjian.js';
 import { useProgressJava } from '../state/progressJava.jsx';
@@ -154,6 +155,8 @@ export default function Beranda() {
                   buka={terbuka.has(c.id)}
                   onToggle={() => toggleChapter(c.id)}
                   basePath="/belajar"
+                  sintaksPath={`/sintaks/${c.id}`}
+                  jumlahSintaks={jumlahSintaks('js', c.id)}
                   isSelesai={isSelesai}
                   kuisStatus={data.kuis}
                   berikutnyaId={berikutnya?.id}
@@ -187,6 +190,8 @@ export default function Beranda() {
                 buka={terbukaJava.has(c.id)}
                 onToggle={() => toggleChapterJava(c.id)}
                 basePath="/java/belajar"
+                sintaksPath={`/java/sintaks/${c.id}`}
+                jumlahSintaks={jumlahSintaks('java', c.id)}
                 isSelesai={progJava.isSelesai}
                 isRemedial={(id) => progJava.isRemedial(c.id, id)}
                 renderIsi={progJava.jalurPekan(c.id) === null ? () => <PilihJalurJava chapter={c} progJava={progJava} /> : undefined}

@@ -6,6 +6,7 @@ Website latihan coding interaktif ala Codédex, dalam Bahasa Indonesia, dengan *
 - **Jalur Java — PBO** (lihat [bagian tersendiri di bawah](#course-java--pbo)): 2 pekan, 18 pelajaran, kode Java **sungguhan** dikompilasi & dijalankan lewat JDK di komputermu. Punya "Uji Pemahaman" (lewati pelajaran yang sudah dikuasai) dan "Latihan V-3" (persiapan verifikasi tatap muka).
 - Editor kode (CodeMirror) + Console + Tes otomatis (✅/❌) + Preview untuk DOM/React
 - Petunjuk bertahap; tombol solusi baru muncul setelah 3 kali mencoba
+- **Sintaks penting per chapter** (JavaScript dan Java): tombol 📌 di tiap kotak chapter membuka daftar sintaks beserta fungsinya (dan kebiasaan di industri) untuk refresh ingatan. Datanya ada di `src/lessons/sintaks-js.js` dan `src/lessonsJava/sintaks-java.js`
 - XP, streak harian, progress per chapter, dan kode terakhir di tiap pelajaran disimpan di `localStorage` (progress Java disimpan **terpisah** dari progress JS/React)
 - Tema terang/gelap, bisa ekspor/impor progress
 - Jalur JavaScript berjalan **offline** setelah `npm install`; jalur Java butuh JDK terpasang (lihat di bawah)
@@ -31,6 +32,7 @@ Lalu buka http://localhost:5173.
 | `npm run build` | Membuat versi produksi di folder `dist/` |
 | `npm run preview` | Menjalankan hasil build |
 | `npm run check-lessons` | Mengecek semua pelajaran JS **dan** Java (lihat di bawah) |
+| `npm run check-sintaks` | Mengecek daftar sintaks penting tiap chapter (lengkap, tidak kembar) |
 | `npm run check-lessons-java` | Mengecek pelajaran Java saja lewat JDK sungguhan |
 | `npm run check-bank-java` | Mengecek semua soal `prediksi-output` di bank Uji Pemahaman Java bisa dikompilasi & dijalankan |
 | `npm run ikon` | Membuat ulang ikon PNG aplikasi dari `public/ikon.svg` |
