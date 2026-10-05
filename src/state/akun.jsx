@@ -3,9 +3,22 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useProgress } from './progress.jsx';
 import { bagianCloud, gabungProgress } from './gabungProgress.js';
+import { gabungRiwayat, potongUkuranRiwayat } from './gabungRiwayat.js';
+import { ambilUntukSinkron, langgananRiwayat, terapkanDariSinkron } from './riwayatUjian.js';
+import { gabungWorkspace, ukuranWorkspace } from './gabungWorkspace.js';
+import {
+  ambilUntukSinkron as ambilWorkspace,
+  langgananWorkspace,
+  terapkanDariSinkron as terapkanWorkspace,
+} from './workspace.js';
 
 const KUNCI_AKUN = 'latihkode:akun:v1';
 const JEDA_SIMPAN_MS = 1500;
+const JEDA_SEGARKAN_MS = 20000; // minimal selang antar-sinkron riwayat/workspace saat tab kembali aktif
+// Workspace diedit terus-menerus saat mengetik, jadi dikirim setelah berhenti mengetik cukup lama
+// (menghemat jatah perintah database gratis).
+const JEDA_WORKSPACE_MS = 6000;
+const BATAS_WORKSPACE = 700 * 1024; // karakter JSON; di bawah batas server (900 KB) & batas request database
 
 function muatAkun() {
   try {
@@ -77,6 +90,15 @@ export function AkunProvider({ children }) {
   const terakhirTerkirim = useRef(-1); // nilai data.diubah yang terakhir tersimpan di cloud
   const sudahSinkronAwal = useRef(false);
   const sedangSinkron = useRef(false);
+  const sedangSinkronRiwayat = useRef(false);
+  const terakhirSinkronRiwayat = useRef(0);
+  const ulangRiwayat = useRef(false);
+  const fnRiwayat = useRef(null);
+  const sedangSinkronWorkspace = useRef(false);
+  const terakhirSinkronWorkspace = useRef(0);
+  const ulangWorkspace = useRef(false);
+  const fnWorkspace = useRef(null);
+  const [masalahWorkspace, setMasalahWorkspace] = useState(null);
 
   const ganti = useCallback((a) => {
     simpanAkun(a);
@@ -100,6 +122,72 @@ export function AkunProvider({ children }) {
     [ganti],
   );
 
+  /**
+   * Riwayat ujian: ambil dari cloud, gabungkan dengan lokal, simpan hasilnya di kedua tempat.
+   * Sengaja tidak mengubah status akun: riwayat bukan data kritis, jadi galat jaringan/server diabaikan
+   * (kecuali sesi tidak valid) dan dicoba lagi pada sinkron berikutnya.
+   */
+  const sinkronRiwayat = useCallback(async () => {
+    const a = akunRef.current;
+    if (!a) return;
+    if (sedangSinkronRiwayat.current) {
+      ulangRiwayat.current = true; // ada perubahan baru saat sinkron berjalan: ulangi setelah selesai
+      return;
+    }
+    sedangSinkronRiwayat.current = true;
+    try {
+      const { riwayat: cloud } = await api('riwayat', { token: a.token });
+      const gabungan = gabungRiwayat(ambilUntukSinkron(), cloud);
+      terapkanDariSinkron(gabungan);
+      await api('riwayat', { method: 'PUT', token: a.token, body: { riwayat: potongUkuranRiwayat(gabungan) } });
+      terakhirSinkronRiwayat.current = Date.now();
+    } catch (e) {
+      if (e.status === 401) tanganiGalat(e);
+    } finally {
+      sedangSinkronRiwayat.current = false;
+      if (ulangRiwayat.current) {
+        ulangRiwayat.current = false;
+        setTimeout(() => fnRiwayat.current?.(), 300);
+      }
+    }
+  }, [tanganiGalat]);
+  fnRiwayat.current = sinkronRiwayat;
+
+  /**
+   * Workspace: sama seperti riwayat (ambil, gabung, simpan di kedua tempat). Bila datanya terlalu besar
+   * untuk batas gratis, hanya digabung ke lokal dan tidak dikirim (lihat `masalahWorkspace`).
+   */
+  const sinkronWorkspace = useCallback(async () => {
+    const a = akunRef.current;
+    if (!a) return;
+    if (sedangSinkronWorkspace.current) {
+      ulangWorkspace.current = true;
+      return;
+    }
+    sedangSinkronWorkspace.current = true;
+    try {
+      const { workspace: cloud } = await api('workspace', { token: a.token });
+      const gabungan = gabungWorkspace(ambilWorkspace(), cloud);
+      terapkanWorkspace(gabungan);
+      if (ukuranWorkspace(gabungan) > BATAS_WORKSPACE) {
+        setMasalahWorkspace('Project Workspace terlalu besar untuk disinkronkan (maksimal ±700 KB kode). Hapus project/berkas yang tidak dipakai.');
+        return;
+      }
+      setMasalahWorkspace(null);
+      await api('workspace', { method: 'PUT', token: a.token, body: { workspace: gabungan } });
+      terakhirSinkronWorkspace.current = Date.now();
+    } catch (e) {
+      if (e.status === 401) tanganiGalat(e);
+    } finally {
+      sedangSinkronWorkspace.current = false;
+      if (ulangWorkspace.current) {
+        ulangWorkspace.current = false;
+        setTimeout(() => fnWorkspace.current?.(), 300);
+      }
+    }
+  }, [tanganiGalat]);
+  fnWorkspace.current = sinkronWorkspace;
+
   /** Ambil progress cloud, gabungkan dengan lokal, lalu simpan hasilnya di kedua tempat. */
   const sinkronPenuh = useCallback(async () => {
     const a = akunRef.current;
@@ -116,12 +204,14 @@ export function AkunProvider({ children }) {
       setStatus('tersimpan');
       setPesanStatus('');
       setTerakhirSinkron(new Date());
+      sinkronRiwayat();
+      sinkronWorkspace();
     } catch (e) {
       tanganiGalat(e);
     } finally {
       sedangSinkron.current = false;
     }
-  }, [terapkanSinkron, tanganiGalat]);
+  }, [terapkanSinkron, tanganiGalat, sinkronRiwayat, sinkronWorkspace]);
 
   /** Kirim progress lokal ke cloud (dipakai setelah ada perubahan). */
   const kirim = useCallback(async () => {
@@ -144,10 +234,55 @@ export function AkunProvider({ children }) {
   useEffect(() => {
     if (!akun) return;
     if (!sudahSinkronAwal.current) sinkronPenuh();
-    const online = () => (sudahSinkronAwal.current ? kirim() : sinkronPenuh());
+    const online = () => {
+      if (!sudahSinkronAwal.current) return sinkronPenuh();
+      kirim();
+      sinkronRiwayat();
+      return sinkronWorkspace();
+    };
+    // Riwayat ujian & Workspace bisa berubah dari perangkat lain: segarkan saat tab/app kembali dibuka.
+    const terlihat = () => {
+      if (document.visibilityState !== 'visible' || !sudahSinkronAwal.current) return;
+      if (Date.now() - terakhirSinkronRiwayat.current > JEDA_SEGARKAN_MS) sinkronRiwayat();
+      if (Date.now() - terakhirSinkronWorkspace.current > JEDA_SEGARKAN_MS) sinkronWorkspace();
+    };
     window.addEventListener('online', online);
-    return () => window.removeEventListener('online', online);
-  }, [akun, sinkronPenuh, kirim]);
+    document.addEventListener('visibilitychange', terlihat);
+    return () => {
+      window.removeEventListener('online', online);
+      document.removeEventListener('visibilitychange', terlihat);
+    };
+  }, [akun, sinkronPenuh, kirim, sinkronRiwayat, sinkronWorkspace]);
+
+  // Riwayat ujian berubah di perangkat ini (selesai ujian / hapus): kirim ke cloud setelah jeda singkat.
+  useEffect(() => {
+    if (!akun) return undefined;
+    let t;
+    const off = langgananRiwayat((jenis) => {
+      if (jenis !== 'lokal' || !sudahSinkronAwal.current) return;
+      clearTimeout(t);
+      t = setTimeout(sinkronRiwayat, JEDA_SIMPAN_MS);
+    });
+    return () => {
+      off();
+      clearTimeout(t);
+    };
+  }, [akun, sinkronRiwayat]);
+
+  // Workspace berubah di perangkat ini (mengetik, berkas baru, hapus project): kirim setelah berhenti mengubah.
+  useEffect(() => {
+    if (!akun) return undefined;
+    let t;
+    const off = langgananWorkspace((jenis) => {
+      if (jenis !== 'lokal' || !sudahSinkronAwal.current) return;
+      clearTimeout(t);
+      t = setTimeout(sinkronWorkspace, JEDA_WORKSPACE_MS);
+    });
+    return () => {
+      off();
+      clearTimeout(t);
+    };
+  }, [akun, sinkronWorkspace]);
 
   // Setiap progress berubah: kirim ke cloud setelah jeda singkat.
   useEffect(() => {
@@ -177,6 +312,9 @@ export function AkunProvider({ children }) {
       daftar: (u, p) => masukAtauDaftar('daftar', u, p),
       keluar: () => ganti(null),
       sinkronSekarang: sinkronPenuh,
+      sinkronRiwayat,
+      sinkronWorkspace,
+      masalahWorkspace,
       async gantiPassword(passwordLama, passwordBaru) {
         const { token } = await api('akun', { method: 'POST', token: akun.token, body: { passwordLama, passwordBaru } });
         ganti({ ...akun, token });
@@ -186,7 +324,7 @@ export function AkunProvider({ children }) {
         ganti(null);
       },
     }),
-    [akun, status, pesanStatus, terakhirSinkron, masukAtauDaftar, ganti, sinkronPenuh],
+    [akun, status, pesanStatus, terakhirSinkron, masukAtauDaftar, ganti, sinkronPenuh, sinkronRiwayat, sinkronWorkspace, masalahWorkspace],
   );
 
   return <Ctx.Provider value={nilai}>{children}</Ctx.Provider>;

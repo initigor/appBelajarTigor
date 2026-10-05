@@ -1,9 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { daftarProject, buatProject, hapusProject, TEMPLAT } from '../state/workspace.js';
+import { daftarProject, buatProject, hapusProject, TEMPLAT, useVersiWorkspace } from '../state/workspace.js';
+import { useAkun } from '../state/akun.jsx';
 
 export default function WorkspaceDaftar() {
-  const [projects, setProjects] = useState(() => daftarProject());
+  const { akun, sinkronWorkspace, masalahWorkspace } = useAkun();
+  const versi = useVersiWorkspace();
+  // Ambil project terbaru dari cloud (mis. yang dibuat di perangkat lain) setiap halaman ini dibuka.
+  useEffect(() => {
+    sinkronWorkspace?.();
+  }, [sinkronWorkspace]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const projects = useMemo(() => daftarProject(), [versi]);
   const [bahasaBaru, setBahasaBaru] = useState('javascript');
   const navigate = useNavigate();
 
@@ -17,7 +25,6 @@ export default function WorkspaceDaftar() {
   const hapus = (id, nama) => {
     if (!window.confirm(`Hapus project "${nama}"? Tidak bisa dibatalkan.`)) return;
     hapusProject(id);
-    setProjects(daftarProject());
   };
 
   return (
@@ -30,6 +37,16 @@ export default function WorkspaceDaftar() {
             IDE mini di browser: banyak project, banyak berkas, JavaScript dan Python — jalan sungguhan tanpa server. Cocok untuk latihan bebas
             di luar kurikulum pelajaran.
           </p>
+          <p className="teks-redup">
+            {akun ? (
+              <>☁️ Tersinkron dengan akun <b>{akun.username}</b>: project yang sama muncul di HP dan laptop.</>
+            ) : (
+              <>
+                Project tersimpan di perangkat ini. <Link to="/akun">Masuk ke akun</Link> supaya project juga muncul di perangkat lain.
+              </>
+            )}
+          </p>
+          {akun && masalahWorkspace && <p className="pemberitahuan-ujian">⚠️ {masalahWorkspace}</p>}
         </div>
       </section>
 

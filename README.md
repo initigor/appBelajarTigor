@@ -84,9 +84,9 @@ Yang didukung: Upstash (`KV_REST_API_URL` + `KV_REST_API_TOKEN` atau `UPSTASH_RE
 ### Cara kerja
 | Bagian | File |
 | --- | --- |
-| API (Vercel Functions) | `api/daftar.js`, `api/masuk.js`, `api/progress.js`, `api/akun.js` |
+| API (Vercel Functions) | `api/daftar.js`, `api/masuk.js`, `api/progress.js`, `api/riwayat.js`, `api/workspace.js`, `api/akun.js` |
 | Database, hash password, token sesi | `server/db.js`, `server/auth.js`, `server/sesi.js` |
-| Sinkron di aplikasi | `src/state/akun.jsx`, `src/state/gabungProgress.js` |
+| Sinkron di aplikasi | `src/state/akun.jsx`, `src/state/gabungProgress.js`, `src/state/gabungRiwayat.js`, `src/state/gabungWorkspace.js` |
 | Halaman | `src/pages/Akun.jsx` (`/akun`) |
 
 - Password disimpan sebagai **hash scrypt** (tidak pernah disimpan dalam bentuk aslinya).
@@ -94,6 +94,7 @@ Yang didukung: Upstash (`KV_REST_API_URL` + `KV_REST_API_TOKEN` atau `UPSTASH_RE
 - Sesi berlaku 60 hari. Mengganti password membuat perangkat lain otomatis keluar.
 - Progress dikirim ke cloud ±1,5 detik setelah ada perubahan. Saat offline, progress disimpan di perangkat dan dikirim otomatis begitu online lagi.
 - Saat masuk di perangkat baru, progress lokal dan cloud **digabung**: pelajaran selesai digabung, percobaan diambil yang terbanyak, dan kode diambil dari sisi yang lebih baru. Reset progress juga ikut tersinkron.
+- **Riwayat ujian** (jawaban + pembahasan tiap percobaan) disimpan terpisah di `api/riwayat.js` karena ukurannya lebih besar dari progress, lalu digabung di klien (`gabungRiwayat.js`): percobaan dari semua perangkat digabung (id unik), penghapusan memakai "batu nisan" supaya tidak hidup lagi, dan "hapus semua" memakai penanda waktu `reset`. Disinkronkan saat masuk, ±1,5 detik setelah selesai ujian/hapus, saat kembali online, dan saat tab dibuka lagi.
 - Belum ada fitur "lupa password", karena akun tidak memakai email.
 
 ### Mencoba di laptop
@@ -165,12 +166,13 @@ Tombol **Stop** menghentikan Worker secara paksa (`terminate()`) lalu membuat Wo
 
 IDE mini di browser, terpisah dari pelajaran — untuk JavaScript dan Python saja (Java sengaja tidak disertakan; lihat kesimpulan di atas). Dibangun di atas Worker yang sama dengan `/lab`.
 
-- **Project**: nama, bahasa (JavaScript/Python), kumpulan berkas (`{ path: isi }`), satu `entryPoint`. Disimpan di `localStorage` (`src/state/workspace.js`), autosave dengan debounce singkat setiap perubahan.
+- **Project**: nama, bahasa (JavaScript/Python), kumpulan berkas (`{ path: isi }`), satu `entryPoint`. Disimpan di `localStorage` (`src/state/workspace.js`), autosave dengan debounce singkat setiap perubahan. **Bila sudah masuk akun, project ikut tersinkron ke semua perangkat** (lihat bagian Akun): project baru/hapus/edit dari HP muncul di laptop dan sebaliknya.
 - **File explorer** (sidebar kiri): buat/ganti-nama/hapus berkas, tandai berkas sebagai entry point (🎯). Nama berkas boleh memuat `/` untuk kesan folder (mis. `utils/helper.py`), tapi ini masih daftar datar, bukan pohon folder sungguhan.
 - **Tab**: setiap berkas yang dibuka dari sidebar muncul sebagai tab di atas editor; bisa ditutup satu per satu.
 - **Multi-berkas nyata untuk Python**: sebelum menjalankan, **semua** berkas project ditulis ke filesystem virtual Pyodide (`pyodide.FS.writeFile`) — jadi `import modul_lain` antar-berkas benar-benar bekerja, dites langsung dengan project 2 berkas (`main.py` mengimpor fungsi dari `helper.py`). Untuk JavaScript, MVP ini hanya menjalankan isi berkas **entry point** (belum ada resolusi `import`/`require` antar-berkas — itu strategi lanjutan kalau dibutuhkan, karena perlu resolver modul kustom di dalam Worker tanpa bundler).
 - **Unduh**: berkas aktif (Blob + `<a download>`, jalan di Safari iPad — bukan File System Access API yang tidak didukung Safari) dan seluruh project sebagai `.zip` (JSZip).
-- Belum ada di MVP ini (menyusul kalau dibutuhkan): upload/drag-drop berkas atau `.zip`, dukungan notebook `.ipynb`, folder sungguhan, sinkron ke akun/Supabase.
+- Belum ada di MVP ini (menyusul kalau dibutuhkan): upload/drag-drop berkas atau `.zip`, dukungan notebook `.ipynb`, folder sungguhan.
+- **Sinkron antarperangkat**: project digabung per project dengan aturan *terakhir diubah menang* (`src/state/gabungWorkspace.js`), jadi hindari mengedit **project yang sama** di dua perangkat sekaligus. Penghapusan memakai "batu nisan" supaya project yang dihapus tidak hidup lagi. Edit dikirim ±6 detik setelah berhenti mengetik. Batasnya ±700 KB kode total (di atasnya hanya disimpan di perangkat dan muncul peringatan di halaman Workspace).
 
 ## Course Java — PBO
 

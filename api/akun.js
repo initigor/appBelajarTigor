@@ -1,10 +1,10 @@
 // GET    /api/akun                                  →  { username, dibuat }
 // POST   /api/akun  { passwordLama, passwordBaru }  →  { token }  (ganti password; sesi lain otomatis keluar)
-// DELETE /api/akun  { password }                    →  { terhapus: true }  (hapus akun & progress)
+// DELETE /api/akun  { password }                    →  { terhapus: true }  (hapus akun, progress, riwayat ujian & workspace)
 import { ambilDb } from '../server/db.js';
 import { aman, bacaJson, HttpError, json } from '../server/http.js';
 import { buatToken, cocokPassword, hashPassword, validasiAkun } from '../server/auth.js';
-import { batasi, kunciProgress, kunciUser, penggunaAktif } from '../server/sesi.js';
+import { batasi, kunciProgress, kunciRiwayat, kunciUser, kunciWorkspace, penggunaAktif } from '../server/sesi.js';
 
 export const GET = aman(async (req) => {
   const db = ambilDb();
@@ -32,6 +32,6 @@ export const DELETE = aman(async (req) => {
   await batasi(db, `batas:akun:${username}`, 10, 900, 'Terlalu banyak percobaan. Tunggu 15 menit.');
   if (!(await cocokPassword(String(body.password ?? ''), user.hash))) throw new HttpError(403, 'Password salah.');
 
-  await db.del(kunciUser(username), kunciProgress(username));
+  await db.del(kunciUser(username), kunciProgress(username), kunciRiwayat(username), kunciWorkspace(username));
   return json(200, { terhapus: true });
 });

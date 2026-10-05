@@ -15,7 +15,7 @@ import {
 } from '../ujian/susun.js';
 import { htmlPreview, jalankanPelajaran } from '../engine/runner.js';
 import { useProgress } from '../state/progress.jsx';
-import { daftarRiwayat, simpanPercobaan } from '../state/riwayatUjian.js';
+import { daftarRiwayat, simpanPercobaan, useVersiRiwayat } from '../state/riwayatUjian.js';
 import { layarSentuh } from '../hooks/useModeLayar.js';
 import Editor from '../components/Editor.jsx';
 import BarSimbol from '../components/BarSimbol.jsx';
@@ -235,6 +235,7 @@ function Intro({ ujian, dataUjian, prog, onMulai }) {
   const semuaPelajaran = chapters.flatMap((c) => c.pelajaran);
   const selesai = semuaPelajaran.filter((p) => prog.isSelesai(p.id)).length;
   const belumPertama = semuaPelajaran.find((p) => !prog.isSelesai(p.id));
+  useVersiRiwayat(); // segarkan saat riwayat dari perangkat lain tiba lewat sinkron
   const jumlahRiwayat = daftarRiwayat(ujian.id).length;
 
   return (

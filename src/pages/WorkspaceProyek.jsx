@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import JSZip from 'jszip';
-import { ambilProject, simpanProject, namaFileTersedia } from '../state/workspace.js';
+import { ambilProject, simpanProject, namaFileTersedia, tandaProject, useVersiWorkspace } from '../state/workspace.js';
 import { useProgress } from '../state/progress.jsx';
+import { useAkun } from '../state/akun.jsx';
 import Editor from '../components/Editor.jsx';
 import BarSimbol from '../components/BarSimbol.jsx';
 import { layarSentuh } from '../hooks/useModeLayar.js';
@@ -26,7 +27,14 @@ function unduhBlob(nama, isi, tipe = 'text/plain') {
 export default function WorkspaceProyek() {
   const { id } = useParams();
   const progJs = useProgress();
-  const [project, setProject] = useState(() => ambilProject(id));
+  const { sinkronWorkspace } = useAkun();
+  const versi = useVersiWorkspace();
+  // Dibaca ulang saat hasil sinkron datang: project dari perangkat lain bisa baru muncul setelah halaman dibuka.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const project = useMemo(() => ambilProject(id), [id, versi]);
+  useEffect(() => {
+    sinkronWorkspace?.();
+  }, [sinkronWorkspace, id]);
 
   if (!project) {
     return (
@@ -60,12 +68,32 @@ function IsiWorkspace({ projectAwal, gelap }) {
   const sabRef = useRef(null);
   const projectRef = useRef(project);
   projectRef.current = project;
+  const versi = useVersiWorkspace();
+  const tersimpanRef = useRef(tandaProject(projectAwal)); // isi terakhir yang sama dengan penyimpanan lokal
 
   // Autosave (debounce kecil) setiap kali project berubah.
   useEffect(() => {
-    const t = setTimeout(() => simpanProject(project), 400);
+    const t = setTimeout(() => {
+      simpanProject(project);
+      tersimpanRef.current = tandaProject(project);
+    }, 400);
     return () => clearTimeout(t);
   }, [project]);
+
+  // Hasil sinkron membawa versi baru project ini dari perangkat lain: ambil, asalkan tidak ada ketikan yang belum tersimpan.
+  useEffect(() => {
+    const baru = ambilProject(projectAwal.id);
+    if (!baru || tandaProject(baru) === tersimpanRef.current) return;
+    if (tandaProject(projectRef.current) !== tersimpanRef.current) return; // ada perubahan lokal yang belum tersimpan
+    tersimpanRef.current = tandaProject(baru);
+    setProject(baru);
+    setTabTerbuka((t) => {
+      const sisa = t.filter((x) => x in baru.files);
+      return sisa.length > 0 ? sisa : [baru.entryPoint];
+    });
+    setAktif((a) => (a in baru.files ? a : baru.entryPoint));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [versi]);
 
   useEffect(
     () => () => {
