@@ -9,6 +9,7 @@ import Pengaturan from './pages/Pengaturan.jsx';
 import Install from './pages/Install.jsx';
 import Akun from './pages/Akun.jsx';
 import Ujian from './pages/Ujian.jsx';
+import KuisPelajaran from './pages/KuisPelajaran.jsx';
 import { RiwayatDaftar, RiwayatDetail } from './pages/RiwayatUjian.jsx';
 import Lab from './pages/Lab.jsx';
 import WorkspaceDaftar from './pages/WorkspaceDaftar.jsx';
@@ -110,6 +111,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Beranda />} />
         <Route path="/belajar/:id" element={<Pelajaran />} />
+        <Route path="/belajar/:id/kuis" element={<KuisPelajaran />} />
         <Route path="/java/belajar/:id" element={<PelajaranJava />} />
         <Route path="/java/uji/:pekan" element={<UjiPemahamanJava />} />
         <Route path="/ujian/:id" element={<Ujian />} />

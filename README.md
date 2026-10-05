@@ -277,6 +277,31 @@ export default {
 
 Aturan penting: **id soal harus unik di semua ujian**, `chapterId` harus termasuk `chapterIds`, dan kolom `pelajaran` (opsional) harus pelajaran yang benar-benar ada di chapter itu. Semua itu, plus kebenaran kunci, diperiksa oleh `npm run check-ujian`.
 
+## Rangkuman & kuis per pelajaran
+
+Setiap pelajaran JavaScript/React/Node punya satu halaman **rangkuman + kuis** di `/belajar/<id>/kuis`, supaya materi tidak berhenti di "sudah bisa menyalin sintaks". Alurnya: **Kesimpulan & poin yang harus diingat → 3–5 soal pilihan ganda** (satu per satu, dengan umpan balik dan penjelasan langsung setelah memilih) → hasil + tinjauan soal yang keliru. Urutan pilihan diacak setiap kali, dan kuis boleh diulang. Skor terbaik disimpan di `progress.kuis` (ikut tersinkron lewat akun) dan tampil sebagai badge 🧠 di Beranda.
+
+Pintu masuknya: tombol **📝 Rangkuman & kuis** di bawah materi pada halaman pelajaran, dan di jendela "Pelajaran selesai!".
+
+Isi kuis ada di `src/kuis/` — satu berkas per chapter (`01-dasar-js.js`, ...), isinya objek `{ [idPelajaran]: { intisari, rangkuman, soal } }`:
+
+~~~js
+'array-sort': {
+  intisari: 'Kesimpulan 1–2 kalimat.',
+  rangkuman: ['poin 1 (boleh `kode` dan **tebal**)', 'poin 2', 'poin 3'],   // 3–6 poin
+  soal: [
+    {
+      tanya: 'Fungsi apa yang mengurutkan array tanpa mengubah array aslinya?',   // boleh pakai blok kode ~~~js
+      benar: '`toSorted(...)`',
+      salah: ['`sort(...)` langsung', '`splice(...).sort(...)`', '`reverse(...)`'],   // 2–4 pilihan salah
+      jelas: 'Penjelasan yang tampil setelah menjawab.',
+    },
+  ],   // 3–5 soal
+},
+~~~
+
+Tulis `benar` terpisah dari `salah` (urutannya diacak saat ditampilkan). Hindari membuat jawaban benar selalu yang terpanjang. `npm run check-kuis` memeriksa bahwa **setiap pelajaran punya kuis**, format soal valid, pilihan tidak kembar, dan memberi peringatan bila jawaban benar selalu pilihan terpanjang.
+
 ## Struktur folder
 
 ```
@@ -412,11 +437,12 @@ Helper untuk pesan tes bisa di-import dari `src/engine/tes.js`: `gagal(pesan)`, 
 
 ## `npm run check-lessons`
 
-Menjalankan **ketiga** checker berurutan:
+Menjalankan **keempat** checker berurutan:
 
 1. `scripts/check-lessons.js` — tiap pelajaran JS di Node (DOM/React memakai jsdom), memastikan **solusi** lolos semua tesnya sendiri dan **kodeAwal** belum lolos semua tes (supaya tidak ada latihan "gratis").
 2. `scripts/check-lessons-java.js` — tiap pelajaran Java lewat JDK sungguhan (butuh `javac`/`java` di `PATH`; kalau tidak ada, langkah ini dilewati dengan pesan jelas), dengan pemeriksaan yang disesuaikan per `subtipe` (lihat bagian Course Java — PBO).
 3. `scripts/check-ujian.js` — semua bank soal ujian: struktur & id valid, **kunci "prediksi output" harus sama dengan output sebenarnya**, **solusi soal kode lolos tesnya** sementara kode awalnya tidak, dan pemilihan soal acak menghasilkan komposisi yang tepat.
+4. `scripts/check-kuis.js` — bank kuis per pelajaran (`src/kuis/`): setiap pelajaran harus punya rangkuman + 3–5 soal valid, tidak ada kuis yatim, dan peringatan bila jawaban benar selalu paling panjang.
 
 ```bash
 npm run check-lessons
@@ -427,6 +453,7 @@ npm run check-lessons -- react       # filter pelajaran JS
 npm run check-lessons-java -- array  # filter pelajaran Java saja
 npm run check-ujian                  # bank soal ujian saja
 npm run check-ujian -- ujian-4       # satu ujian saja
+npm run check-kuis                   # bank kuis per pelajaran saja
 ```
 
 ## Cara kerja singkat

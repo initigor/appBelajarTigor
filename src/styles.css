@@ -1710,9 +1710,14 @@ a {
 }
 .modal-tombol {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
   margin-top: 16px;
+}
+.modal-saran {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
 }
 .confetti {
   position: fixed;
@@ -2998,5 +3003,168 @@ a {
   }
   .riwayat-tinjau {
     display: none;
+  }
+}
+
+/* ---------- Rangkuman & kuis per pelajaran ---------- */
+.tombol-kuis {
+  margin-top: 16px;
+  width: 100%;
+  justify-content: center;
+}
+.label-kuis {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--aksen);
+  background: var(--aksen-lembut);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.kuis-halaman .kuis-bar {
+  margin: -8px -4px 18px;
+  border: 1px solid var(--garis);
+  border-radius: 12px;
+}
+.kuis-intisari {
+  margin: 14px 0;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--aksen-lembut);
+  border: 1px solid color-mix(in srgb, var(--aksen) 35%, transparent);
+}
+.kuis-intisari p {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+.kuis-rangkuman {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 10px;
+}
+.kuis-rangkuman li::marker {
+  color: var(--aksen);
+}
+.kuis-tips {
+  font-size: 0.9rem;
+}
+.kuis-titik {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0 14px;
+}
+.kuis-titik span {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-3);
+}
+.kuis-titik span.selesai {
+  background: var(--hijau);
+}
+.kuis-titik span.aktif {
+  background: var(--aksen);
+}
+.kuis-soal {
+  margin-bottom: 14px;
+}
+.kuis-opsi {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.kuis-pilihan {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--teks);
+  background: var(--bg-2);
+  border: 2px solid var(--garis);
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+.kuis-pilihan:hover:not(:disabled) {
+  border-color: var(--aksen);
+  background: var(--aksen-lembut);
+}
+.kuis-pilihan:disabled {
+  cursor: default;
+}
+.kuis-huruf {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--teks-2);
+  background: var(--bg-3);
+  border-radius: 50%;
+}
+.kuis-teks {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.kuis-pilihan.benar {
+  border-color: var(--hijau);
+  background: var(--hijau-lembut);
+}
+.kuis-pilihan.benar .kuis-huruf {
+  color: #fff;
+  background: var(--hijau);
+}
+.kuis-pilihan.salah {
+  border-color: var(--merah);
+  background: var(--merah-lembut);
+}
+.kuis-pilihan.salah .kuis-huruf {
+  color: #fff;
+  background: var(--merah);
+}
+.kuis-pilihan.redup {
+  opacity: 0.55;
+}
+.kuis-umpan {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+.kuis-umpan.benar {
+  background: var(--hijau-lembut);
+}
+.kuis-umpan.salah {
+  background: var(--merah-lembut);
+}
+.kuis-umpan.benar > b {
+  color: var(--hijau);
+}
+.kuis-umpan.salah > b {
+  color: var(--merah);
+}
+.kuis-jelas .md {
+  margin: 4px 0 0;
+}
+.kuis-lanjut {
+  margin-top: 8px;
+}
+@media (max-width: 560px) {
+  .kuis-halaman .kuis-bar {
+    margin: -4px 0 14px;
+  }
+  .kuis-halaman .baris-tombol .tombol {
+    width: 100%;
+    justify-content: center;
   }
 }

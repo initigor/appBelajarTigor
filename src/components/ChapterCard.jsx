@@ -6,7 +6,7 @@ import ProgressBar from './ProgressBar.jsx';
  * `renderIsi`, kalau diberikan, menggantikan daftar pelajaran bawaan (dipakai course Java untuk
  * menampilkan pilihan jalur "Uji Pemahaman" / "Belajar dari awal" sebelum daftar pelajaran muncul).
  */
-export default function ChapterCard({ chapter, buka, onToggle, basePath, isSelesai, berikutnyaId, isRemedial, labelNomor, renderIsi, footerIsi }) {
+export default function ChapterCard({ chapter, buka, onToggle, basePath, isSelesai, berikutnyaId, isRemedial, labelNomor, renderIsi, footerIsi, kuisStatus }) {
   const n = chapter.pelajaran.length;
   const selesai = chapter.pelajaran.filter((p) => isSelesai(p.id)).length;
   const tuntas = n > 0 && selesai === n;
@@ -40,6 +40,7 @@ export default function ChapterCard({ chapter, buka, onToggle, basePath, isSeles
                 const done = isSelesai(p.id);
                 const next = berikutnyaId === p.id;
                 const remedial = isRemedial?.(p.id);
+                const kuis = kuisStatus?.[p.id];
                 return (
                   <li key={p.id}>
                     <Link to={`${basePath}/${p.id}`} className={`item-pelajaran ${done ? 'done' : ''} ${next ? 'next' : ''} ${remedial ? 'remedial' : ''}`}>
@@ -47,6 +48,7 @@ export default function ChapterCard({ chapter, buka, onToggle, basePath, isSeles
                       <span className="item-judul">{p.judul}</span>
                       {remedial && <span className="label-remedial">perlu diulang</span>}
                       {p.proyek && <span className="label-proyek">proyek</span>}
+                      {kuis && <span className="label-kuis" title="Skor terbaik kuis rangkuman">🧠 {kuis.terbaik}%</span>}
                       <span className="item-xp">{p.xp} XP</span>
                     </Link>
                   </li>
