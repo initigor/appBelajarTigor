@@ -26,6 +26,19 @@ export const pg = (id, chapterId, pertanyaan, pilihan, benar, penjelasan, pelaja
 /** Sama seperti pg, tetapi pilihan jawabannya berupa KODE/nilai, jadi ditampilkan dengan huruf monospace. */
 export const pgk = (...args) => ({ ...pg(...args), kodePilihan: true });
 
+// isi(id, chapterId, pertanyaan, jawaban, penjelasan, pelajaranId?)
+//    - isian singkat (mis. hasil konversi biner). `jawaban` = array semua bentuk jawaban yang diterima (yang pertama
+//      dipakai sebagai kunci yang ditampilkan). Spasi & huruf besar diabaikan, angka dibandingkan secara numerik.
+export const isi = (id, chapterId, pertanyaan, jawaban, penjelasan, pelajaran) => ({
+  id,
+  tipe: 'isian',
+  chapterId,
+  pelajaran,
+  pertanyaan,
+  jawaban: Array.isArray(jawaban) ? jawaban : [jawaban],
+  penjelasan,
+});
+
 export const output = (id, chapterId, kode, kunci, penjelasan, pelajaran) => ({
   id,
   tipe: 'prediksi-output',

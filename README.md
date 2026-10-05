@@ -1,9 +1,10 @@
 # LatihKode: Latihan JavaScript → React & Java — PBO
 
-Website latihan coding interaktif ala Codédex, dalam Bahasa Indonesia, dengan **dua jalur belajar terpisah**: JavaScript → React, dan Java (Pemrograman Berorientasi Obyek). Setiap konsep dibandingkan dengan C dan Python. Website ini hanya berjalan di komputermu sendiri (localhost), tanpa login dan tanpa backend cloud wajib.
+Website latihan coding interaktif ala Codédex, dalam Bahasa Indonesia, dengan **tiga jalur belajar**: JavaScript → React, Java (Pemrograman Berorientasi Obyek), dan **Arsitektur & Organisasi Komputer (Arsikom)**. Setiap konsep dibandingkan dengan C dan Python. Website ini hanya berjalan di komputermu sendiri (localhost), tanpa login dan tanpa backend cloud wajib.
 
 - **Jalur JavaScript → React**: 13 chapter, 90 pelajaran, dari dasar JS sampai backend Node.js & API — setiap chapter ditutup dengan mini proyek. Dijalankan di Web Worker/iframe (aman, offline).
 - **Jalur Java — PBO** (lihat [bagian tersendiri di bawah](#course-java--pbo)): 2 pekan, 18 pelajaran, kode Java **sungguhan** dikompilasi & dijalankan lewat JDK di komputermu. Punya "Uji Pemahaman" (lewati pelajaran yang sudah dikuasai) dan "Latihan V-3" (persiapan verifikasi tatap muka).
+- **Arsikom** (lihat [bagian tersendiri di bawah](#course-arsikom--arsitektur--organisasi-komputer)): 10 bab, 56 pelajaran bacaan mendalam, masing-masing dengan rangkuman + kuis, plus 5 ujian (4 ujian per bagian + 1 ujian akhir) berisi pilihan ganda dan isian hitungan.
 - Editor kode (CodeMirror) + Console + Tes otomatis (✅/❌) + Preview untuk DOM/React
 - Petunjuk bertahap; tombol solusi baru muncul setelah 3 kali mencoba
 - XP, streak harian, progress per chapter, dan kode terakhir di tiap pelajaran disimpan di `localStorage` (progress Java disimpan **terpisah** dari progress JS/React)
@@ -228,6 +229,54 @@ Tiap pekan (Pekan 2 **dan** Pekan 3) punya dua jalur saat pertama kali dibuka: *
 1. Pelajaran baru: buat file di `src/lessonsJava/pekan-2/` atau `pekan-3/` (urutan mengikuti nama file), isi sesuai `subtipe` yang dipilih (lihat contoh pelajaran yang ada untuk masing-masing subtipe).
 2. Soal bank: tambahkan ke object `bankPekan2`/`bankPekan3` di `src/lessonsJava/_bersama/`, dengan `id` unik dan `lessonId` yang cocok — minimal 4 soal per pelajaran.
 3. Jalankan `npm run check-lessons-java -- <sebagian-id>` untuk memverifikasi solusinya benar-benar lolos lewat JDK.
+
+## Course Arsikom — Arsitektur & Organisasi Komputer
+
+Materi teori yang lengkap dari **bit sampai multicore**, disusun seperti mata kuliah Arsikom: 10 bab, 56 pelajaran (±53.000 kata), 56 kuis (275 soal), dan 5 ujian (153 soal di bank). Muncul di Beranda sebagai materi **"Arsitektur & Organisasi Komputer"**, dengan progress, XP, dan streak yang sama dengan jalur JavaScript.
+
+| Bab | Isi |
+| --- | --- |
+| 1. Pengantar & Kinerja | Arsitektur vs organisasi, sejarah, von Neumann vs Harvard, CPI, Amdahl |
+| 2. Representasi Data | Sistem bilangan, konversi, komplemen 2, ASCII/Unicode/UTF-8, endianness, Hamming |
+| 3. Aritmetika Komputer | Overflow, operasi bit, perkalian (Booth), pembagian, IEEE 754 |
+| 4. Logika Digital | Gerbang, K-map, adder/MUX/decoder, flip-flop, register/counter/FSM, ALU |
+| 5. CPU & Siklus Instruksi | Register, fetch-decode-execute, bus, interupsi, simulasi CPU mini di Python |
+| 6. Set Instruksi | Format, mode pengalamatan, CISC vs RISC, assembly MIPS, stack & prosedur |
+| 7. Kontrol & Pipeline | Hardwired vs microcode, pipeline, hazard, prediksi cabang, superscalar/OoO, latihan hitungan |
+| 8. Memori & Cache | SRAM/DRAM/flash, pemetaan cache, kebijakan, AMAT, memori virtual, TLB |
+| 9. I/O & Penyimpanan | Bus & PCIe, polling/interupsi/DMA, HDD/SSD, RAID |
+| 10. Paralelisme | Flynn, multicore & MESI, GPU, tren modern, rangkuman akhir |
+
+### Cara kerja
+
+- Pelajaran Arsikom bertipe **`teks`** (bacaan, tanpa editor). Halamannya `src/pages/PelajaranTeks.jsx`. Pelajaran dianggap **selesai (dan XP masuk) saat skor kuisnya ≥ 60%**.
+- **Kuis** memakai sistem yang sama dengan kuis JavaScript (`src/kuis/14-arsikom-pengantar.js` … `23-arsikom-paralel.js`).
+- **Ujian** memakai sistem ujian yang sama (`src/ujian/ujian-a1-…` … `ujian-a5-akhir.js`) dengan satu tipe soal baru, **isian singkat** (`isi(...)` di `src/ujian/_bersama/buat.js`), untuk hitungan seperti konversi bilangan, CPI, atau AMAT. Jawaban dinilai tanpa membedakan huruf besar/kecil dan spasi, `0,5` sama dengan `0.5`, dan angka dibandingkan secara numerik; tiap soal mencantumkan semua bentuk jawaban yang diterima.
+- Chapter Arsikom (id 14–23) didaftarkan di `src/lessons/chapters.js` dengan `awalan: 'Bab'` dan `nomor` supaya tampil sebagai "Bab 1", dan dikelompokkan di `src/lessons/materi.js`.
+
+### Cara menambah pelajaran Arsikom
+
+1. Buat berkas di folder bab, mis. `src/lessons/21-arsikom-memori/08-nama.js`:
+
+~~~js
+export default {
+  id: 'arsikom-nama-unik',
+  judul: 'Judul Pelajaran',
+  tipe: 'teks',
+  xp: 20,
+  materi: `
+# Judul
+
+Isi dalam Markdown: tabel, blok kode untuk diagram ASCII atau kode C/Python.
+
+## Rangkuman
+- ...
+`,
+};
+~~~
+
+2. Tambahkan kuisnya (3–5 soal) di berkas bab yang sesuai di `src/kuis/`.
+3. Jalankan `npm run check-kuis` dan `npm run check-ujian`. Di dalam template string `materi`, backtick ditulis dengan backslash di depannya, tiap backslash ditulis dobel (kode C `printf("..\\n")` menjadi dua backslash sebelum `n` di berkas), dan hindari `${`.
 
 ## Ujian pemahaman (JavaScript → React)
 

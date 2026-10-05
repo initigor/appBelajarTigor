@@ -23,6 +23,13 @@ export const daftarMateriJs = [
     deskripsi: 'Node.js, HTTP, dan membuat REST API sendiri.',
     chapterIds: [13],
   },
+  {
+    id: 'arsikom',
+    judul: 'Arsitektur & Organisasi Komputer',
+    ikon: '🖥️',
+    deskripsi: 'Bagaimana komputer bekerja dari bit sampai multicore. Tiap pelajaran berupa bacaan mendalam + kuis, dan ada ujian per bagian.',
+    chapterIds: [14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+  },
 ];
 
 /** Gabungkan config materi dengan data chapter yang sebenarnya (urutan chapter mengikuti `chapterIds`). */

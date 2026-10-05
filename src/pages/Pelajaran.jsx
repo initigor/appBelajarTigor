@@ -9,6 +9,7 @@ import Markdown from '../components/Markdown.jsx';
 import Confetti from '../components/Confetti.jsx';
 import BarSimbol from '../components/BarSimbol.jsx';
 import { layarSentuh, useModeLayar } from '../hooks/useModeLayar.js';
+import PelajaranTeks from './PelajaranTeks.jsx';
 
 const MIN_PERCOBAAN_SOLUSI = 3;
 
@@ -28,6 +29,8 @@ export default function Pelajaran() {
       </main>
     );
   }
+  // Pelajaran bacaan (mis. Arsikom) tidak punya editor: tampilannya terpisah.
+  if (pelajaran.tipe === 'teks') return <PelajaranTeks key={pelajaran.id} pelajaran={pelajaran} />;
   // key memastikan semua state di-reset ketika pindah pelajaran.
   return <HalamanPelajaran key={pelajaran.id} pelajaran={pelajaran} />;
 }
