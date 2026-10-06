@@ -24,6 +24,20 @@ export const daftarMateriJs = [
     chapterIds: [13],
   },
   {
+    id: 'konsep',
+    judul: 'Konsep Pemrograman & Bahasa Script',
+    ikon: '🧬',
+    deskripsi: 'Low-level vs high-level, compiler vs interpreter, bahasa script, tipe, paradigma, algoritma, dan kompleksitas. Bacaan + kode Python yang bisa dijalankan.',
+    chapterIds: [24, 25, 26],
+  },
+  {
+    id: 'python',
+    judul: 'Python',
+    ikon: '🐍',
+    deskripsi: 'Dari dasar sampai OOP dan Python dunia nyata. Setiap contoh kode bisa langsung dijalankan di halaman, dan Workspace punya editor Notebook (.ipynb).',
+    chapterIds: [27, 28, 29, 30, 31, 32],
+  },
+  {
     id: 'arsikom',
     judul: 'Arsitektur & Organisasi Komputer',
     ikon: '🖥️',

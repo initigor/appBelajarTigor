@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { daftarProject, buatProject, hapusProject, TEMPLAT, useVersiWorkspace } from '../state/workspace.js';
+import { daftarProject, buatProject, hapusProject, simpanProject, TEMPLAT, useVersiWorkspace } from '../state/workspace.js';
+import { dariIpynb, keIpynb } from '../state/notebook.js';
 import { useAkun } from '../state/akun.jsx';
 
 export default function WorkspaceDaftar() {
@@ -14,6 +15,23 @@ export default function WorkspaceDaftar() {
   const projects = useMemo(() => daftarProject(), [versi]);
   const [bahasaBaru, setBahasaBaru] = useState('javascript');
   const navigate = useNavigate();
+  const inputImporRef = useRef(null);
+
+  // Impor notebook Jupyter (.ipynb) dari komputer sebagai project baru.
+  const imporIpynb = async (e) => {
+    const berkas = e.target.files?.[0];
+    e.target.value = '';
+    if (!berkas) return;
+    try {
+      if (berkas.size > 3 * 1024 * 1024) throw new Error('Berkas terlalu besar (maksimal 3 MB).');
+      const teks = keIpynb(dariIpynb(await berkas.text())); // divalidasi dan dinormalkan
+      const p = buatProject(berkas.name.replace(/\.ipynb$/i, '') || 'Notebook', 'notebook', false);
+      simpanProject({ ...p, files: { 'main.ipynb': teks } });
+      navigate(`/workspace/${p.id}`);
+    } catch (err) {
+      window.alert(`Gagal mengimpor notebook: ${err.message}`);
+    }
+  };
 
   const buat = () => {
     const nama = window.prompt('Nama project baru:', TEMPLAT[bahasaBaru].label);
@@ -34,7 +52,7 @@ export default function WorkspaceDaftar() {
           <p className="hero-kecil">Ngoding bebas</p>
           <h1>🗂️ Workspace</h1>
           <p className="hero-deskripsi">
-            IDE mini di browser: banyak project, banyak berkas, JavaScript dan Python — jalan sungguhan tanpa server. Cocok untuk latihan bebas
+            IDE mini di browser: banyak project, banyak berkas, JavaScript, Python, dan Notebook Python (.ipynb) — jalan sungguhan tanpa server. Cocok untuk latihan bebas
             di luar kurikulum pelajaran.
           </p>
           <p className="teks-redup">
@@ -53,11 +71,16 @@ export default function WorkspaceDaftar() {
       <div className="workspace-buat">
         <select className="workspace-pilih-bahasa" value={bahasaBaru} onChange={(e) => setBahasaBaru(e.target.value)}>
           <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
+          <option value="python">Python (skrip .py)</option>
+          <option value="notebook">Python Notebook (.ipynb)</option>
         </select>
         <button className="tombol tombol-besar" onClick={buat}>
           + Project baru
         </button>
+        <button className="tombol tombol-kedua tombol-besar" onClick={() => inputImporRef.current?.click()} title="Impor notebook Jupyter dari komputermu">
+          ⬆️ Impor .ipynb
+        </button>
+        <input ref={inputImporRef} type="file" accept=".ipynb,application/json" hidden onChange={imporIpynb} />
       </div>
 
       {projects.length === 0 ? (
@@ -67,11 +90,11 @@ export default function WorkspaceDaftar() {
           {projects.map((p) => (
             <div key={p.id} className="kartu-workspace">
               <Link to={`/workspace/${p.id}`} className="kartu-workspace-isi">
-                <span className={`chip-bahasa chip-bahasa-${p.bahasa}`}>{p.bahasa === 'javascript' ? 'JS' : 'PY'}</span>
+                <span className={`chip-bahasa chip-bahasa-${p.bahasa}`}>{p.bahasa === 'javascript' ? 'JS' : p.bahasa === 'notebook' ? 'NB' : 'PY'}</span>
                 <div>
                   <b>{p.nama}</b>
                   <p className="teks-redup">
-                    {Object.keys(p.files).length} berkas · diubah {new Date(p.diubah).toLocaleDateString('id-ID')}
+                    {p.bahasa === 'notebook' ? 'Notebook' : `${Object.keys(p.files).length} berkas`} · diubah {new Date(p.diubah).toLocaleDateString('id-ID')}
                   </p>
                 </div>
               </Link>

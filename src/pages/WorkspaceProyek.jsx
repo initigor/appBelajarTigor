@@ -9,6 +9,7 @@ import BarSimbol from '../components/BarSimbol.jsx';
 import { layarSentuh } from '../hooks/useModeLayar.js';
 import { useTerminal } from '../lab/useTerminal.js';
 import { bikinPembacaBaris, bikinSab, tulisBarisKeSab } from '../lab/stdinBridge.js';
+import NotebookProyek from './NotebookProyek.jsx';
 
 const EKSTENSI = { javascript: '.js', python: '.py' };
 
@@ -46,6 +47,7 @@ export default function WorkspaceProyek() {
       </main>
     );
   }
+  if (project.bahasa === 'notebook') return <NotebookProyek key={id} projectAwal={project} gelap={progJs.temaAktif === 'gelap'} />;
   return <IsiWorkspace key={id} projectAwal={project} gelap={progJs.temaAktif === 'gelap'} />;
 }
 

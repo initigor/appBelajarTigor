@@ -40,7 +40,8 @@ function useCubitZoom(ref) {
   }, [ref]);
 }
 
-export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx, bahasa = 'javascript', readOnly, onView }) {
+/** `otomatis`: tinggi mengikuti isi (dipakai sel notebook & blok kode di pelajaran), bukan memenuhi induknya. */
+export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx, bahasa = 'javascript', readOnly, onView, otomatis }) {
   const { ukuran, bungkus } = useEditorPref();
   const kotakRef = useRef(null);
   useCubitZoom(kotakRef);
@@ -68,7 +69,7 @@ export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx, bahasa =
   );
 
   return (
-    <div className={`editor-kotak ${bungkus ? 'bungkus' : ''} ${readOnly ? 'baca-saja' : ''}`} ref={kotakRef}>
+    <div className={`editor-kotak ${bungkus ? 'bungkus' : ''} ${readOnly ? 'baca-saja' : ''} ${otomatis ? 'otomatis' : ''}`} ref={kotakRef}>
       <CodeMirror
         className="editor"
         style={{ '--ukuran-kode': `${ukuran}px` }}
@@ -76,7 +77,9 @@ export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx, bahasa =
         onChange={onUbah}
         extensions={ekstensi}
         theme={gelap ? oneDark : 'light'}
-        height="100%"
+        height={otomatis ? 'auto' : '100%'}
+        minHeight={otomatis ? '60px' : undefined}
+        maxHeight={otomatis ? '420px' : undefined}
         basicSetup={{ tabSize: 2, foldGutter: false, autocompletion: true }}
         indentWithTab
         onCreateEditor={(view) => onView?.(view)}

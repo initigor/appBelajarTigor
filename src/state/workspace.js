@@ -4,6 +4,7 @@
 // src/state/gabungWorkspace.js.
 import { useSyncExternalStore } from 'react';
 import { rapikanWorkspace } from './gabungWorkspace.js';
+import { teksNotebookAwal } from './notebook.js';
 
 const KUNCI = 'latihkode:workspace:v1';
 
@@ -17,6 +18,12 @@ export const TEMPLAT = {
     label: 'Python: Hello World',
     entryPoint: 'main.py',
     files: { 'main.py': 'print("Halo dari Workspace!")\n' },
+  },
+  // Notebook Jupyter (.ipynb) berisi sel kode Python + sel teks Markdown; isinya disimpan sebagai teks JSON .ipynb.
+  notebook: {
+    label: 'Python Notebook',
+    entryPoint: 'main.ipynb',
+    files: { 'main.ipynb': teksNotebookAwal() },
   },
 };
 
