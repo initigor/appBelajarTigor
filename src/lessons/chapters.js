@@ -13,6 +13,16 @@ export const chapters = [
   { id: 11, folder: '11-react-list', judul: 'React List & Kondisional', ikon: '📋', deskripsi: 'map + key, render kondisional, dan useEffect.' },
   { id: 12, folder: '12-proyek-akhir', judul: 'Proyek Akhir: Portofolio', ikon: '🏆', deskripsi: 'Bangun web portofolio mini langkah demi langkah.' },
   { id: 13, folder: '13-backend-node', judul: 'Backend Node.js & API', ikon: '🔌', deskripsi: 'Node.js, npm, cara kerja HTTP, routing ala Express, REST API, middleware, sampai proyek kalkulator bisnis UMKM.' },
+  // ---------- Konsep Pemrograman & Bahasa Script, serta Python (bacaan + blok kode Python yang bisa dijalankan) ----------
+  { id: 24, folder: '24-konsep-bahasa', awalan: 'Bab', nomor: 1, judul: 'Dasar Bahasa Pemrograman', ikon: '🧬', deskripsi: 'Program & algoritma, bahasa tingkat rendah vs tinggi, compiler, interpreter, tahap kompilasi, bytecode, dan JIT.' },
+  { id: 25, folder: '25-konsep-script', awalan: 'Bab', nomor: 2, judul: 'Script, Tipe & Paradigma', ikon: '📜', deskripsi: 'Bahasa script, tipe statis vs dinamis, manajemen memori, paradigma, lingkungan kerja, dan debugging.' },
+  { id: 26, folder: '26-konsep-algoritma', awalan: 'Bab', nomor: 3, judul: 'Algoritma & Teori Dasar', ikon: '🧮', deskripsi: 'Algoritma, berpikir komputasional, kompleksitas Big-O, struktur data dasar, dan rekursi.' },
+  { id: 27, folder: '27-python-dasar', awalan: 'Bab', nomor: 1, judul: 'Mulai Python', ikon: '🐍', deskripsi: 'REPL, variabel, tipe data, operator, string, input/output, percabangan, dan perulangan.' },
+  { id: 28, folder: '28-python-struktur-data', awalan: 'Bab', nomor: 2, judul: 'Struktur Data Python', ikon: '🧰', deskripsi: 'List, tuple, set, dict, slicing, iterasi, dan comprehension.' },
+  { id: 29, folder: '29-python-fungsi', awalan: 'Bab', nomor: 3, judul: 'Fungsi & Modul', ikon: '🧩', deskripsi: 'Fungsi, parameter, scope, lambda, modul & library standar, iterator dan generator.' },
+  { id: 30, folder: '30-python-berkas-galat', awalan: 'Bab', nomor: 4, judul: 'Berkas & Penanganan Galat', ikon: '🗂️', deskripsi: 'Exception, try/except, membaca & menulis berkas, JSON, dan CSV.' },
+  { id: 31, folder: '31-python-oop', awalan: 'Bab', nomor: 5, judul: 'OOP di Python', ikon: '🏛️', deskripsi: 'Class, objek, pewarisan, method khusus (dunder), dan dataclass.' },
+  { id: 32, folder: '32-python-praktis', awalan: 'Bab', nomor: 6, judul: 'Python di Dunia Nyata', ikon: '🚀', deskripsi: 'Virtual environment & pip, skrip command-line, regex, testing, serta NumPy, pandas, dan matplotlib.' },
   // ---------- Arsitektur & Organisasi Komputer (Arsikom): pelajaran berupa bacaan + kuis (tipe 'teks') ----------
   { id: 14, folder: '14-arsikom-pengantar', awalan: 'Bab', nomor: 1, judul: 'Pengantar Arsikom & Kinerja', ikon: '🖥️', deskripsi: 'Arsitektur vs organisasi, sejarah, von Neumann vs Harvard, dan cara mengukur kinerja (CPI, Amdahl).' },
   { id: 15, folder: '15-arsikom-data', awalan: 'Bab', nomor: 2, judul: 'Representasi Data', ikon: '🔢', deskripsi: 'Sistem bilangan, konversi, bilangan bertanda (komplemen 2), karakter, dan urutan byte (endianness).' },

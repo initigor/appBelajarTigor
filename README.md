@@ -5,6 +5,8 @@ Website latihan coding interaktif ala Codédex, dalam Bahasa Indonesia, dengan *
 - **Jalur JavaScript → React**: 13 chapter, 90 pelajaran, dari dasar JS sampai backend Node.js & API — setiap chapter ditutup dengan mini proyek. Dijalankan di Web Worker/iframe (aman, offline).
 - **Jalur Java — PBO** (lihat [bagian tersendiri di bawah](#course-java--pbo)): 2 pekan, 18 pelajaran, kode Java **sungguhan** dikompilasi & dijalankan lewat JDK di komputermu. Punya "Uji Pemahaman" (lewati pelajaran yang sudah dikuasai) dan "Latihan V-3" (persiapan verifikasi tatap muka).
 - **Arsikom** (lihat [bagian tersendiri di bawah](#course-arsikom--arsitektur--organisasi-komputer)): 10 bab, 56 pelajaran bacaan mendalam, masing-masing dengan rangkuman + kuis, plus 5 ujian (4 ujian per bagian + 1 ujian akhir) berisi pilihan ganda dan isian hitungan.
+- **Konsep Pemrograman & Bahasa Script** (3 bab, 15 pelajaran) dan **Python** (6 bab, 29 pelajaran): bacaan mendalam dengan **blok kode Python yang bisa dijalankan langsung di halaman** (Pyodide), plus kuis dan 3 ujian. Lihat [bagian tersendiri](#materi-konsep-pemrograman--python).
+- **Workspace** punya editor **Python Notebook (.ipynb)** yang kompatibel dengan Jupyter (lihat [Workspace](#workspace-ngoding-bebas-workspace)).
 - Editor kode (CodeMirror) + Console + Tes otomatis (✅/❌) + Preview untuk DOM/React
 - Petunjuk bertahap; tombol solusi baru muncul setelah 3 kali mencoba
 - **Sintaks penting per chapter** (JavaScript dan Java): tombol 📌 di tiap kotak chapter membuka daftar sintaks beserta fungsinya (dan kebiasaan di industri) untuk refresh ingatan. Datanya ada di `src/lessons/sintaks-js.js` dan `src/lessonsJava/sintaks-java.js`
@@ -167,15 +169,27 @@ Tombol **Stop** menghentikan Worker secara paksa (`terminate()`) lalu membuat Wo
 
 ## Workspace: Ngoding Bebas (`/workspace`)
 
-IDE mini di browser, terpisah dari pelajaran — untuk JavaScript dan Python saja (Java sengaja tidak disertakan; lihat kesimpulan di atas). Dibangun di atas Worker yang sama dengan `/lab`.
+IDE mini di browser, terpisah dari pelajaran — untuk JavaScript, Python, dan **Python Notebook (.ipynb)** (Java sengaja tidak disertakan; lihat kesimpulan di atas). Dibangun di atas Worker yang sama dengan `/lab`.
 
 - **Project**: nama, bahasa (JavaScript/Python), kumpulan berkas (`{ path: isi }`), satu `entryPoint`. Disimpan di `localStorage` (`src/state/workspace.js`), autosave dengan debounce singkat setiap perubahan. **Bila sudah masuk akun, project ikut tersinkron ke semua perangkat** (lihat bagian Akun): project baru/hapus/edit dari HP muncul di laptop dan sebaliknya.
 - **File explorer** (sidebar kiri): buat/ganti-nama/hapus berkas, tandai berkas sebagai entry point (🎯). Nama berkas boleh memuat `/` untuk kesan folder (mis. `utils/helper.py`), tapi ini masih daftar datar, bukan pohon folder sungguhan.
 - **Tab**: setiap berkas yang dibuka dari sidebar muncul sebagai tab di atas editor; bisa ditutup satu per satu.
 - **Multi-berkas nyata untuk Python**: sebelum menjalankan, **semua** berkas project ditulis ke filesystem virtual Pyodide (`pyodide.FS.writeFile`) — jadi `import modul_lain` antar-berkas benar-benar bekerja, dites langsung dengan project 2 berkas (`main.py` mengimpor fungsi dari `helper.py`). Untuk JavaScript, MVP ini hanya menjalankan isi berkas **entry point** (belum ada resolusi `import`/`require` antar-berkas — itu strategi lanjutan kalau dibutuhkan, karena perlu resolver modul kustom di dalam Worker tanpa bundler).
 - **Unduh**: berkas aktif (Blob + `<a download>`, jalan di Safari iPad — bukan File System Access API yang tidak didukung Safari) dan seluruh project sebagai `.zip` (JSZip).
-- Belum ada di MVP ini (menyusul kalau dibutuhkan): upload/drag-drop berkas atau `.zip`, dukungan notebook `.ipynb`, folder sungguhan.
+- Belum ada di MVP ini (menyusul kalau dibutuhkan): upload/drag-drop berkas atau `.zip`, folder sungguhan.
 - **Sinkron antarperangkat**: project digabung per project dengan aturan *terakhir diubah menang* (`src/state/gabungWorkspace.js`), jadi hindari mengedit **project yang sama** di dua perangkat sekaligus. Penghapusan memakai "batu nisan" supaya project yang dihapus tidak hidup lagi. Edit dikirim ±6 detik setelah berhenti mengetik. Batasnya ±700 KB kode total (di atasnya hanya disimpan di perangkat dan muncul peringatan di halaman Workspace).
+
+### Python Notebook (.ipynb)
+
+Pilih **Python Notebook (.ipynb)** saat membuat project (atau **⬆️ Impor .ipynb** untuk membawa notebook dari Jupyter/Colab). Notebook berisi **sel kode** (Python sungguhan di browser lewat Pyodide) dan **sel teks** (Markdown), mirip Jupyter:
+
+- Variabel **bertahan antar-sel** sampai kernel di-restart (♻️ Restart); **Ctrl+Enter** menjalankan sel, **Shift+Enter** menjalankan lalu pindah ke sel berikutnya, **▶▶ Jalankan semua**, **⏹ Stop**.
+- Keluaran: `print`, nilai ekspresi terakhir (`Out:`), traceback, **grafik matplotlib** (PNG), dan `input()` lewat kotak input di bawah sel (butuh SharedArrayBuffer, sudah aktif lewat header COOP/COEP).
+- `numpy`, `pandas`, `matplotlib`, dan pustaka Pyodide lain **dimuat otomatis** saat di-`import` (butuh internet pada pemakaian pertama); paket murni Python bisa lewat `micropip`.
+- Sel bisa ditambah, dipindah, digandakan, dihapus, dan diubah jenisnya (⇄). Notebook **tersimpan otomatis** dan ikut tersinkron lewat akun seperti project lain.
+- Unduh sebagai `.ipynb` (format nbformat 4) atau skrip `.py`.
+
+Cara kerja: notebook disimpan sebagai teks JSON `.ipynb` di `project.files['main.ipynb']` (bahasa project `notebook`), sehingga API cloud dan penggabungan tidak berubah. Logika murni (parse/serialisasi, batas ukuran keluaran) ada di `src/state/notebook.js`; kernel di `src/lab/pyKernelWorker.js` + `src/engine/pythonKernel.js`; halaman di `src/pages/NotebookProyek.jsx`.
 
 ## Course Java — PBO
 
@@ -231,6 +245,21 @@ Tiap pekan (Pekan 2 **dan** Pekan 3) punya dua jalur saat pertama kali dibuka: *
 1. Pelajaran baru: buat file di `src/lessonsJava/pekan-2/` atau `pekan-3/` (urutan mengikuti nama file), isi sesuai `subtipe` yang dipilih (lihat contoh pelajaran yang ada untuk masing-masing subtipe).
 2. Soal bank: tambahkan ke object `bankPekan2`/`bankPekan3` di `src/lessonsJava/_bersama/`, dengan `id` unik dan `lessonId` yang cocok — minimal 4 soal per pelajaran.
 3. Jalankan `npm run check-lessons-java -- <sebagian-id>` untuk memverifikasi solusinya benar-benar lolos lewat JDK.
+
+## Materi Konsep Pemrograman & Python
+
+Dua materi baru di Beranda (container "Konsep Pemrograman & Bahasa Script" dan "Python"), memakai sistem yang sama dengan Arsikom: pelajaran bertipe `teks`, kuis per pelajaran, dan ujian per bagian.
+
+| Materi | Isi |
+| --- | --- |
+| **Konsep Pemrograman** (Bab 1–3) | Program & algoritma; **bahasa tingkat rendah vs tinggi**; **compiler vs interpreter**; tahap kompilasi (lexer, AST, optimasi, linker); bytecode, VM, dan JIT; bahasa script; tipe statis/dinamis & manajemen memori; paradigma; lingkungan kerja (terminal, pip, Git); debugging; algoritma, kompleksitas Big-O, struktur data, rekursi |
+| **Python** (Bab 1–6) | Dasar (variabel, operator, string, input/output, if, loop); struktur data (list, tuple, set, dict, comprehension); fungsi, scope, decorator, modul, generator; exception, berkas, JSON/CSV; OOP (class, pewarisan, dunder, dataclass, Enum); venv & pip, skrip CLI (argparse), regex, testing, NumPy/pandas/matplotlib |
+
+- Pelajaran yang diberi `interaktif: 'python'` mengubah setiap blok ` ```python ` (atau `~~~python`) menjadi **kotak kode yang bisa dijalankan**, diubah, dan di-reset (`src/components/KodePythonInteraktif.jsx`). Semua kotak di satu halaman **berbagi satu sesi Python**, jadi variabel dari kotak atas dipakai di kotak bawah. Gunakan ` ```py ` bila blok hanya contoh yang tidak boleh dijalankan (mis. isi berkas `.py`, perintah yang butuh terminal).
+- Blok yang **sengaja** menampilkan galat harus diawali komentar `# galat`. Blok yang memakai `input()` boleh diberi komentar `# contoh input: 3 4` (dipakai checker sebagai jawaban otomatis).
+- Pelajaran dianggap selesai bila skor kuis ≥ 60% (seperti Arsikom).
+- `npm run check-python` menjalankan **semua blok Python** di semua pelajaran interaktif memakai Python di komputermu (berurutan dalam satu namespace per pelajaran, di folder sementara) dan memastikan tidak ada galat tak disengaja. Dilewati bila Python tidak terpasang; blok NumPy/pandas/matplotlib dilewati bila paketnya tidak ada.
+- Soal ujian yang menanyakan **keluaran kode** memakai tipe `isian` (jawaban dinilai tanpa membedakan spasi dan huruf besar/kecil; sertakan semua bentuk yang diterima, mis. kutip satu dan dua).
 
 ## Course Arsikom — Arsitektur & Organisasi Komputer
 
@@ -507,6 +536,7 @@ npm run check-lessons-java -- array  # filter pelajaran Java saja
 npm run check-ujian                  # bank soal ujian saja
 npm run check-ujian -- ujian-4       # satu ujian saja
 npm run check-kuis                   # bank kuis per pelajaran saja
+npm run check-python                 # jalankan semua blok Python di materi (butuh Python di PATH)
 ```
 
 ## Cara kerja singkat

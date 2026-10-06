@@ -14,6 +14,7 @@
     "ikon": "node scripts/buat-ikon.js",
     "check-ujian": "node scripts/check-ujian.js",
     "check-kuis": "node scripts/check-kuis.js",
+    "check-python": "node scripts/check-python.js",
     "check-sintaks": "node scripts/check-sintaks.js"
   },
   "dependencies": {

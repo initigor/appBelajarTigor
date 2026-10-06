@@ -58,8 +58,14 @@ export default function PelajaranTeks({ pelajaran }) {
           </div>
         </div>
 
-        <Markdown>{pelajaran.materi}</Markdown>
+        <Markdown interaktifPython={pelajaran.interaktif === 'python'}>{pelajaran.materi}</Markdown>
       </article>
+
+      {pelajaran.interaktif === 'python' && (
+        <p className="teks-redup kotak-latihan-ws">
+          🧪 Mau bereksperimen lebih bebas? Buka <Link to="/workspace">Workspace</Link> dan buat <b>Python Notebook</b>, lalu tulis ulang contoh di atas dan ubah-ubah sendiri.
+        </p>
+      )}
 
       <section className="kotak-kuis-baca">
         <h2>🧠 Sudah paham? Buktikan lewat kuis</h2>
