@@ -194,7 +194,7 @@ Beda dengan jalur JavaScript, kode Java **benar-benar dikompilasi & dijalankan**
    Keduanya harus mencetak nomor versi. Kalau hanya `java -version` yang berhasil, yang terpasang JRE, bukan JDK.
 3. Mulai ulang `npm run dev` supaya server dev membaca `PATH` yang baru.
 
-Kalau JDK belum terpasang, halaman pelajaran Java akan menampilkan instruksi pemasangan (bukan error mentah). Jalur JavaScript & React tidak terpengaruh sama sekali.
+Kalau JDK tidak terdeteksi (mis. situs dibuka dari Vercel, HP, atau iPad), halaman pelajaran Java masuk **mode baca**: materi, tugas, petunjuk, kode awal (dengan tombol salin), solusi, dan pembahasan tetap bisa dipelajari, dan kodenya dicoba di online compiler (OneCompiler, Programiz, JDoodle). Latihan pilihan ganda (diagram memori, penyebab galat) tetap memberi umpan balik langsung. Yang tidak ada di mode ini: eksekusi dan tes otomatis, **progress, dan XP**. Uji Pemahaman Java butuh JDK dan menampilkan instruksi pemasangan beserta tautan ke materinya. Jalur JavaScript & React tidak terpengaruh sama sekali.
 
 **Penting:** fitur ini **hanya aktif lewat `npm run dev` / `npm run preview` di komputermu sendiri**. Endpoint `/devjava/*` sengaja tidak pernah ikut ter-deploy ke Vercel (tidak ada JDK di sana) — di situs produksi, jalur itu otomatis dikembalikan ke halaman utama.
 

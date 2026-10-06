@@ -3240,3 +3240,25 @@ a {
     font-size: 1rem;
   }
 }
+
+/* ---------- Mode baca Java (tanpa JDK) ---------- */
+.berkas-baca {
+  margin: 10px 0;
+}
+.berkas-baca-kepala {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.berkas-baca .md pre {
+  margin-top: 6px;
+}
+.baca .baris-tombol {
+  flex-wrap: wrap;
+}
+.baca .kotak-petunjuk,
+.baca .kartu-setelan,
+.baca .kotak-tugas {
+  margin-top: 18px;
+}

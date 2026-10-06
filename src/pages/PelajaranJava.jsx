@@ -16,7 +16,7 @@ import EditorJava from '../components/EditorJava.jsx';
 import Markdown from '../components/Markdown.jsx';
 import Confetti from '../components/Confetti.jsx';
 import { useModeLayar } from '../hooks/useModeLayar.js';
-import BelumPasangJdk from '../components/BelumPasangJdk.jsx';
+import ModeBacaJava from '../components/ModeBacaJava.jsx';
 
 const MIN_PERCOBAAN_SOLUSI = 3;
 
@@ -231,7 +231,8 @@ function HalamanPelajaranJava({ pelajaran }) {
     ? pelajaran.solusi.map((b) => `**\`${b.nama}\`**\n~~~java\n${b.isi}\n~~~`).join('\n\n')
     : '';
 
-  if (jdk && !jdk.tersedia) return <BelumPasangJdk jdk={jdk} />;
+  // Tanpa JDK (mis. situs di Vercel, HP, iPad): tetap bisa belajar lewat mode baca + online compiler.
+  if (jdk && !jdk.tersedia) return <ModeBacaJava pelajaran={pelajaran} chapter={chapter} posisi={posisi} />;
 
   return (
     <main className="pelajaran" data-mode={mode} data-panel={panel}>

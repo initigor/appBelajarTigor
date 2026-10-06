@@ -5,7 +5,8 @@ import { bankSoalPekan } from '../lessonsJava/_bersama/bank.js';
 import { pilihSoalAttempt, cocokKunci } from '../lessonsJava/_bersama/soal.js';
 import { useProgress } from '../state/progress.jsx';
 import { useProgressJava } from '../state/progressJava.jsx';
-import { jalankanCuplikan, jalankanKodeOutput, samaOutput } from '../engine/javaClient.js';
+import { cekStatusJdk, jalankanCuplikan, jalankanKodeOutput, samaOutput } from '../engine/javaClient.js';
+import BelumPasangJdk from '../components/BelumPasangJdk.jsx';
 import EditorJava from '../components/EditorJava.jsx';
 import Markdown from '../components/Markdown.jsx';
 
@@ -14,6 +15,10 @@ export default function UjiPemahamanJava() {
   const [params] = useSearchParams();
   const pekanNum = Number(pekan);
   const chapter = daftarChapterJava.find((c) => c.id === pekanNum);
+  const [jdk, setJdk] = useState(null);
+  useEffect(() => {
+    cekStatusJdk().then(setJdk);
+  }, []);
   if (!chapter) {
     return (
       <main className="halaman sempit">
@@ -24,6 +29,8 @@ export default function UjiPemahamanJava() {
       </main>
     );
   }
+  // Uji Pemahaman menjalankan kode Java sungguhan, jadi butuh JDK. Materinya tetap bisa dibaca.
+  if (jdk && !jdk.tersedia) return <BelumPasangJdk jdk={jdk} bacaTo={`/java/belajar/${chapter.pelajaran[0]?.id}`} />;
   // key menyertakan `remedial` supaya berpindah normal <-> remedial (atau menekan "Uji ulang") selalu me-remount
   // dengan state bersih, bukan menyisakan attempt/hasilAkhir dari percobaan sebelumnya.
   return <IsiUji key={`${pekan}-${params.get('remedial') ?? ''}-${params.get('v3') ?? ''}`} chapter={chapter} pekan={pekanNum} />;
