@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 
 /** Ditampilkan di halaman pelajaran Java saat JDK tidak terdeteksi di komputer/dev server ini. */
-export default function BelumPasangJdk({ jdk }) {
+export default function BelumPasangJdk({ jdk, bacaTo }) {
   return (
     <main className="halaman sempit">
-      <h1>☕ Java butuh JDK di komputermu</h1>
+      <h1>☕ Fitur ini butuh JDK di komputermu</h1>
       <p>
         Course Java — PBO menjalankan kode Java <b>sungguhan</b> (bukan simulasi) lewat <code>javac</code> dan{' '}
         <code>java</code> di komputer ini. {jdk?.jangkauan === false ? 'Server dev lokal (`npm run dev`) tidak bisa dihubungi dari sini.' : 'JDK tidak terdeteksi di PATH komputer ini.'}
@@ -36,9 +36,16 @@ export default function BelumPasangJdk({ jdk }) {
         </ol>
         <p className="teks-redup">Course JavaScript &amp; React tetap bisa dipakai tanpa JDK — hanya course Java yang butuh ini.</p>
       </div>
-      <Link className="tombol" to="/">
-        ← Kembali ke beranda
-      </Link>
+      <div className="baris-tombol">
+        {bacaTo && (
+          <Link className="tombol tombol-lanjut" to={bacaTo}>
+            📖 Baca materinya tanpa JDK →
+          </Link>
+        )}
+        <Link className="tombol tombol-kedua" to="/">
+          ← Kembali ke beranda
+        </Link>
+      </div>
     </main>
   );
 }

@@ -182,7 +182,7 @@ export default function Beranda() {
             onToggle={() => toggleMateri('java')}
             isSelesai={progJava.isSelesai}
             meta={<span>⚡ {progJava.totalXp} XP</span>}
-            catatan="Kode Java dijalankan sungguhan di komputermu, jadi butuh JDK terpasang. Progress & XP Java terpisah dari JavaScript."
+            catatan="Kode Java dijalankan sungguhan di komputermu (lewat npm run dev dengan JDK terpasang) untuk mendapat progress & XP. Dari perangkat lain atau situs online, materinya tetap bisa dibaca dalam mode baca dan kodenya dicoba di online compiler, tanpa progress & XP."
           >
             {daftarChapterJava.map((c) => (
               <ChapterCard
