@@ -24,16 +24,18 @@ export const PUT = aman(async (req) => {
   }
 
   const disimpan = Date.now();
-  // Klien lama belum mengirim 'ujian'. Jangan sampai menimpa hasil ujian yang sudah tersimpan dengan kosong.
+  // Klien lama belum mengirim 'ujian' / 'kuis' / 'mengetik'. Jangan sampai menimpa hasil ujian yang sudah tersimpan dengan kosong.
   const lama = await db.get(kunciProgress(username));
   const kirimUjian = progress.ujian && typeof progress.ujian === 'object' && !Array.isArray(progress.ujian);
   const kirimKuis = progress.kuis && typeof progress.kuis === 'object' && !Array.isArray(progress.kuis);
+  const kirimMengetik = progress.mengetik && typeof progress.mengetik === 'object' && !Array.isArray(progress.mengetik);
   await db.set(kunciProgress(username), {
     selesai: progress.selesai,
     kode: progress.kode,
     percobaan: progress.percobaan,
     ujian: kirimUjian ? progress.ujian : (lama?.ujian ?? {}),
     kuis: kirimKuis ? progress.kuis : (lama?.kuis ?? {}),
+    mengetik: kirimMengetik ? progress.mengetik : (lama?.mengetik ?? {}),
     streak: progress.streak,
     diubah: Number(progress.diubah) || disimpan,
     resetPada: Number(progress.resetPada) || 0,
