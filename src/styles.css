@@ -2670,6 +2670,18 @@ a {
 .app:has(.pelajaran) {
   height: 100dvh;
 }
+/* Halaman yang menggulir di dalam panelnya sendiri (pelajaran & Workspace) tidak boleh ikut menggulir
+   sebagai halaman. `.app` punya min-height: 100vh, dan di iPad/HP 100vh lebih tinggi daripada layar yang
+   terlihat, sehingga jendela ikut bisa digulir. Saat memblok teks, iOS lalu menggulir jendela dan panel
+   bergantian: layar terlihat naik-turun cepat (glitch). Dengan ini hanya satu area yang bisa menggulir. */
+.app:has(.pelajaran),
+.app:has(.workspace-halaman) {
+  min-height: 0;
+  overflow: hidden;
+}
+.panel-kiri {
+  overscroll-behavior: contain;
+}
 .pelajaran:not([data-mode='desktop']) .split {
   grid-template-columns: 1fr;
 }

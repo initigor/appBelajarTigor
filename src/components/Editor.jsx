@@ -19,16 +19,17 @@ function useCubitZoom(ref) {
     const mulai = (e) => {
       if (e.touches.length === 2) awal = { jarak: jarak(e.touches), ukuran: ukuranSaatIni() };
     };
+    // Pasif: listener non-pasif pada touchmove memaksa iOS menunggu JavaScript tiap gerakan jari,
+    // yang mengganggu pemilihan teks (blok) dan menggulir. Cubitan sudah dicegah zoom halamannya oleh touch-action.
     const gerak = (e) => {
       if (!awal || e.touches.length !== 2) return;
-      e.preventDefault();
       setUkuran((awal.ukuran * jarak(e.touches)) / awal.jarak);
     };
     const selesai = (e) => {
       if (e.touches.length < 2) awal = null;
     };
     el.addEventListener('touchstart', mulai, { passive: true });
-    el.addEventListener('touchmove', gerak, { passive: false });
+    el.addEventListener('touchmove', gerak, { passive: true });
     el.addEventListener('touchend', selesai, { passive: true });
     el.addEventListener('touchcancel', selesai, { passive: true });
     return () => {
@@ -45,6 +46,10 @@ export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx, bahasa =
   const { ukuran, bungkus } = useEditorPref();
   const kotakRef = useRef(null);
   useCubitZoom(kotakRef);
+  // Disimpan di ref supaya `ekstensi` stabil: kalau berubah tiap render (mis. onJalankan berupa fungsi inline),
+  // CodeMirror mengonfigurasi ulang editor di tengah pemilihan teks dan seleksi di iPad ikut terganggu.
+  const jalankanRef = useRef(onJalankan);
+  jalankanRef.current = onJalankan;
 
   const ekstensi = useMemo(
     () => [
@@ -58,14 +63,14 @@ export default function Editor({ nilai, onUbah, onJalankan, gelap, jsx, bahasa =
           {
             key: 'Mod-Enter',
             run: () => {
-              onJalankan();
+              jalankanRef.current?.();
               return true;
             },
           },
         ]),
       ),
     ],
-    [jsx, bahasa, readOnly, onJalankan, bungkus],
+    [jsx, bahasa, readOnly, bungkus],
   );
 
   return (
