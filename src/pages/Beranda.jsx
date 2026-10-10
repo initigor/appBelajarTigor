@@ -5,6 +5,7 @@ import { labelBab } from '../lessons/chapters.js';
 import { daftarMateriJs, susunMateri } from '../lessons/materi.js';
 import { daftarChapterJava } from '../lessonsJava/index.js';
 import { daftarUjian } from '../ujian/index.js';
+import { semuaTahap as tahapMengetik } from '../mengetik/latihan.js';
 import { jumlahSintaks } from '../lessons/sintaks.js';
 import { useProgress } from '../state/progress.jsx';
 import { daftarRiwayat, useVersiRiwayat } from '../state/riwayatUjian.js';
@@ -122,6 +123,13 @@ export default function Beranda() {
       </section>
 
       <BannerInstall />
+
+      <Link className="tautan-riwayat" to="/mengetik">
+        <span>⌨️ Latihan mengetik untuk ngoding</span>
+        <span className="teks-redup">
+          {tahapMengetik.filter((t) => data.mengetik?.[t.id]).length}/{tahapMengetik.length} tahap · animasi tangan & latihan khusus tanda baca →
+        </span>
+      </Link>
 
       {totalRiwayat > 0 && (
         <Link className="tautan-riwayat" to="/riwayat">

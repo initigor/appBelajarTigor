@@ -9,6 +9,7 @@ const awal = () => ({
   percobaan: {}, // { [id]: number } berapa kali "Jalankan" ditekan
   ujian: {}, // { [idUjian]: { terbaik, lulus, tanggalLulus, percobaan, xp, terakhir, soalTerakhir } }
   kuis: {}, // { [idPelajaran]: { terbaik, terakhir, percobaan, tanggal } } kuis rangkuman per pelajaran
+  mengetik: {}, // { [idTahap]: { bintang, wpm, akurasi, percobaan, tanggal } } latihan mengetik (src/mengetik)
   streak: { jumlah: 0, terakhir: null },
   tema: 'sistem', // 'sistem' | 'terang' | 'gelap'
   diubah: 0, // timestamp perubahan terakhir (untuk sinkron antar-perangkat)
@@ -32,6 +33,12 @@ export function tanggalLokal(d = new Date()) {
 
 function selisihHari(a, b) {
   return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+}
+
+/** Streak setelah ada aktivitas belajar pada `hariIni` (naik satu bila kemarin juga belajar, selain itu mulai dari 1). */
+function streakHariIni({ jumlah, terakhir }, hariIni) {
+  if (terakhir === hariIni) return { jumlah, terakhir };
+  return { jumlah: terakhir && selisihHari(terakhir, hariIni) === 1 ? jumlah + 1 : 1, terakhir: hariIni };
 }
 
 const Ctx = createContext(null);
@@ -89,18 +96,41 @@ export function ProgressProvider({ children }) {
     ubah((d) => {
       if (d.selesai[pelajaran.id]) return d;
       const hariIni = tanggalLokal();
-      let { jumlah, terakhir } = d.streak;
-      if (terakhir !== hariIni) {
-        jumlah = terakhir && selisihHari(terakhir, hariIni) === 1 ? jumlah + 1 : 1;
-        terakhir = hariIni;
-      }
       return {
         ...d,
         selesai: { ...d.selesai, [pelajaran.id]: { tanggal: hariIni, xp: pelajaran.xp } },
-        streak: { jumlah, terakhir },
+        streak: streakHariIni(d.streak, hariIni),
       };
     });
   }, [ubah]);
+  /**
+   * Simpan hasil satu sesi latihan mengetik sebuah tahap. Bintang, WPM, dan akurasi terbaik dipertahankan.
+   * Berlatih mengetik ikut menjaga streak harian, tetapi tidak memberi XP.
+   * hasil = { bintang, wpm, akurasi }
+   */
+  const terapkanHasilMengetik = useCallback(
+    (id, hasil) => {
+      const hariIni = tanggalLokal();
+      ubah((d) => {
+        const lama = d.mengetik?.[id] ?? {};
+        return {
+          ...d,
+          mengetik: {
+            ...d.mengetik,
+            [id]: {
+              bintang: Math.max(lama.bintang ?? 0, hasil.bintang),
+              wpm: Math.max(lama.wpm ?? 0, hasil.wpm),
+              akurasi: Math.max(lama.akurasi ?? 0, hasil.akurasi),
+              percobaan: (lama.percobaan ?? 0) + 1,
+              tanggal: hariIni,
+            },
+          },
+          streak: streakHariIni(d.streak, hariIni),
+        };
+      });
+    },
+    [ubah],
+  );
   /**
    * Simpan hasil satu percobaan ujian. XP bonus ujian hanya diberikan sekali, saat pertama kali lulus.
    * hasil = { persen, lulus, perChapter, soalIds } (dari hitungHasil di src/ujian/susun.js)
@@ -177,12 +207,13 @@ export function ProgressProvider({ children }) {
       tandaiSelesai,
       terapkanHasilUjian,
       terapkanHasilKuis,
+      terapkanHasilMengetik,
       setTema,
       resetProgress,
       imporData,
       terapkanSinkron,
     };
-  }, [data, temaAktif, simpanKode, hapusKode, tambahPercobaan, tandaiSelesai, terapkanHasilUjian, terapkanHasilKuis, setTema, resetProgress, imporData, terapkanSinkron]);
+  }, [data, temaAktif, simpanKode, hapusKode, tambahPercobaan, tandaiSelesai, terapkanHasilUjian, terapkanHasilKuis, terapkanHasilMengetik, setTema, resetProgress, imporData, terapkanSinkron]);
 
   return <Ctx.Provider value={nilai}>{children}</Ctx.Provider>;
 }

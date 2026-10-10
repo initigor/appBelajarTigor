@@ -246,6 +246,28 @@ Tiap pekan (Pekan 2 **dan** Pekan 3) punya dua jalur saat pertama kali dibuka: *
 2. Soal bank: tambahkan ke object `bankPekan2`/`bankPekan3` di `src/lessonsJava/_bersama/`, dengan `id` unik dan `lessonId` yang cocok — minimal 4 soal per pelajaran.
 3. Jalankan `npm run check-lessons-java -- <sebagian-id>` untuk memverifikasi solusinya benar-benar lolos lewat JDK.
 
+## Latihan Mengetik untuk Ngoding (`/mengetik`)
+
+Latihan jari untuk **tanda baca yang dipakai programmer**, bukan latihan sintaks: tidak ada `function`/`if`, hanya pola seperti `` ( ) [ ] { } < > ; : " ' ` _ = + - * / % ! & | ^ ~ @ # $ \ ? `` dan bentuk nama (camelCase, snake_case, KONSTANTA). Menu **⌨️ Mengetik** di header, plus kartu pintasan di Beranda.
+
+- **Animasi tangan + papan ketik QWERTY (US)**: tombol berikutnya menyala, jari yang bertugas bergerak ke sana (jari lain tetap di barisan rumah), dan untuk huruf besar/simbol atas, kelingking tangan **berlawanan** ikut bergerak ke Shift. Tiap jari punya warna, tonjolan F/J ditandai, dan di atas papan ada kalimat petunjuk seperti *"Shift kiri (kelingking kiri) + 9 (jari manis kanan)"*. Tangan, label tombol, dan petunjuk bisa dimatikan untuk menantang diri sendiri (preferensi tersimpan di perangkat).
+- **26 tahap dalam 4 jalur**: *Dasar: Posisi Jari* (barisan rumah → atas → bawah → angka → Shift), ***Latihan Khusus Tanda Baca*** (11 tahap, satu kelompok per tahap: titik/koma, `;` `:`, kutip, kurung bulat/siku/kurawal, `< > =`, operator hitung, `_ -`, simbol logika, simbol khusus), *Kombinasi Tanda Baca* (pasangan, bersarang, operator ganda `== != && ||`, campuran, tantangan), dan *Kata untuk Ngoding*.
+- **Latihan Bebas**: pilih sendiri simbol yang mau difokuskan (per simbol atau per kelompok) dan jumlah baris, lalu dapatkan baris acak berisi simbol itu. Setelah tiap sesi ada tombol *"Latih tanda baca yang salah"* yang membuat latihan bebas dari simbol yang tadi salah.
+- **Aturan**: salah ketik **tidak memajukan teks** (jari dipaksa mencari tombol yang tepat). Penilaian: ★ selesai, ★★ akurasi ≥ 92%, ★★★ akurasi ≥ 97% dan WPM mencapai target tahap. Jeda lebih dari 3 detik tidak dihitung ke WPM. Tempel (paste) diabaikan; kutip melengkung dari keyboard layar sentuh dinormalkan.
+- **Progress**: bintang, WPM terbaik, akurasi terbaik, dan jumlah percobaan tiap tahap disimpan di `progress.mengetik` (ikut tersinkron ke cloud lewat akun; digabung dengan mengambil nilai terbaik). Berlatih menjaga **streak harian**, tetapi **tidak memberi XP**.
+- **Keyboard**: paling nyaman dengan keyboard fisik (laptop, atau keyboard iPad). Keyboard layar sentuh tetap bisa dipakai, tetapi panduan jarinya jadi tertutup.
+
+| Bagian | Berkas |
+|---|---|
+| Tata letak papan + peta jari + teks petunjuk | `src/mengetik/papan.js` |
+| Mesin (posisi, akurasi, WPM, bintang) | `src/mengetik/mesin.js` |
+| Kurikulum + pembuat latihan bebas | `src/mengetik/latihan.js` |
+| Papan + tangan beranimasi (SVG) | `src/components/PapanKetik.jsx`, `src/mengetik/mengetik.css` |
+| Halaman daftar & sesi | `src/pages/MengetikDaftar.jsx`, `src/pages/Mengetik.jsx` |
+| Pengecekan | `npm run check-mengetik` (juga dijalankan oleh `npm run check-lessons`) |
+
+Menambah tahap: tambahkan objek `{ id, judul, ikon, ringkas, fokus, tip, target, baris }` di jalur yang sesuai pada `src/mengetik/latihan.js`. `npm run check-mengetik` memastikan semua karakter bisa diketik di papan, id unik, tiap karakter `fokus` benar-benar muncul di latihan, dan mesin berperilaku benar.
+
 ## Materi Konsep Pemrograman & Python
 
 Dua materi baru di Beranda (container "Konsep Pemrograman & Bahasa Script" dan "Python"), memakai sistem yang sama dengan Arsikom: pelajaran bertipe `teks`, kuis per pelajaran, dan ujian per bagian.
@@ -519,12 +541,13 @@ Helper untuk pesan tes bisa di-import dari `src/engine/tes.js`: `gagal(pesan)`, 
 
 ## `npm run check-lessons`
 
-Menjalankan **keempat** checker berurutan:
+Menjalankan **kelima** checker berurutan:
 
 1. `scripts/check-lessons.js` — tiap pelajaran JS di Node (DOM/React memakai jsdom), memastikan **solusi** lolos semua tesnya sendiri dan **kodeAwal** belum lolos semua tes (supaya tidak ada latihan "gratis").
 2. `scripts/check-lessons-java.js` — tiap pelajaran Java lewat JDK sungguhan (butuh `javac`/`java` di `PATH`; kalau tidak ada, langkah ini dilewati dengan pesan jelas), dengan pemeriksaan yang disesuaikan per `subtipe` (lihat bagian Course Java — PBO).
 3. `scripts/check-ujian.js` — semua bank soal ujian: struktur & id valid, **kunci "prediksi output" harus sama dengan output sebenarnya**, **solusi soal kode lolos tesnya** sementara kode awalnya tidak, dan pemilihan soal acak menghasilkan komposisi yang tepat.
 4. `scripts/check-kuis.js` — bank kuis per pelajaran (`src/kuis/`): setiap pelajaran harus punya rangkuman + 3–5 soal valid, tidak ada kuis yatim, dan peringatan bila jawaban benar selalu paling panjang.
+5. `scripts/check-mengetik.js` — latihan mengetik (`src/mengetik/`): semua karakter latihan bisa diketik di papan, id tahap unik, karakter fokus muncul di latihan, serta perilaku mesin & pembuat latihan bebas.
 
 ```bash
 npm run check-lessons
@@ -537,6 +560,7 @@ npm run check-ujian                  # bank soal ujian saja
 npm run check-ujian -- ujian-4       # satu ujian saja
 npm run check-kuis                   # bank kuis per pelajaran saja
 npm run check-python                 # jalankan semua blok Python di materi (butuh Python di PATH)
+npm run check-mengetik               # latihan mengetik saja
 ```
 
 ## Cara kerja singkat
